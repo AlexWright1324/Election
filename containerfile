@@ -1,6 +1,6 @@
 # https://bun.sh/guides/ecosystem/docker
 
-FROM oven/bun:distroless
+FROM oven/bun:alpine
 WORKDIR /app
 
 COPY project/package.json package.json
