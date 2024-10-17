@@ -27,6 +27,6 @@ jobs:
       - name: Build and Push
         uses: docker/build-push-action@v5
         with:
-          context: ./containerfile
+          context: .
           push: true
           tags: ghcr.io/${{ env.REPO_LC }}:latest
