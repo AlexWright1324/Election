@@ -36,6 +36,8 @@
 	"type": "module",
 	"dependencies": {
 		"@auth/sveltekit": "^1.7.0",
-		"@prisma/client": "5.20.0"
+		"@prisma/client": "5.20.0",
+		"carta-md": "^4.6.1",
+		"isomorphic-dompurify": "^2.16.0"
 	}
 }

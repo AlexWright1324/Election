@@ -21,18 +21,33 @@ model Ballot {
 
 model Vote {
     ballot    Ballot    @relation(fields: [ballotID], references: [id])
+    role      Role      @relation(fields: [roleID], references: [id])
     candidate Candidate @relation(references: [id], fields: [candidateID])
     position  Int
 
+    roleID      Int
     ballotID    Int
     candidateID Int
 
     @@unique([ballotID, candidateID])
 }
 
-model Candidate {
+model Role {
     id   Int    @id @default(autoincrement())
     name String
 
     votes Vote[]
+}
+
+model Candidate {
+    id          Int    @id @default(autoincrement())
+    users       User[]
+    description String @default("")
+
+    votes Vote[]
+}
+
+model User {
+    uniID     String      @id @unique
+    Candidate Candidate[]
 }

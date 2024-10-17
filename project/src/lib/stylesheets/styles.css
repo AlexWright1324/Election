@@ -15,3 +15,7 @@ body {
     display: flex;
     flex-direction: column;
 }
+
+:where(.carta-theme__default, .carta-theme__default *:not(svg *, symbol *)) {
+    all: revert;
+}

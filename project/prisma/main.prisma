@@ -9,8 +9,9 @@ datasource db {
 }
 
 model Election {
-    id             Int      @id @default(autoincrement())
+    id             Int       @id @default(autoincrement())
     name           String
+    description    String    @default("")
     start          DateTime?
     end            DateTime?
     candidateStart DateTime?
@@ -27,7 +28,7 @@ model Competition {
 }
 
 model User {
-    uniID        String           @id @unique
+    uniID        String        @id @unique
     elections    Election[]
     competitions Competition[]
 }
