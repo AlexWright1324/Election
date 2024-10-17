@@ -14,9 +14,7 @@
   outputs =
     inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-      imports = [
-        inputs.pre-commit-hooks-nix.flakeModule
-      ];
+      imports = [ inputs.pre-commit-hooks-nix.flakeModule ];
 
       systems = import inputs.systems;
 
@@ -32,10 +30,18 @@
           };
 
           devShells.default = pkgs.mkShell {
-            inputsFrom = [
-              config.pre-commit.devShell
+            inputsFrom = [ config.pre-commit.devShell ];
+            packages = with pkgs; [
+              bun
+              act # Testing Workflows - Requires Docker (not Podman)
             ];
-            packages = with pkgs; [ bun ];
+            shellHook = with pkgs; ''
+              export PRISMA_FMT_BINARY="${prisma-engines}/bin/prisma-fmt"
+              export PRISMA_QUERY_ENGINE_BINARY="${prisma-engines}/bin/query-engine"
+              export PRISMA_SCHEMA_ENGINE_BINARY="${prisma-engines}/bin/schema-engine"
+              export PRISMA_QUERY_ENGINE_LIBRARY="${prisma-engines}/lib/libquery_engine.node"
+              export PRISMA_INTROSPECTION_ENGINE_BINARY="${prisma-engines}/bin/introspection-engine"
+            '';
           };
 
           formatter = pkgs.nixfmt-rfc-style;

@@ -1,0 +1,38 @@
+generator client {
+    provider = "prisma-client-js"
+    output   = "../node_modules/@prisma-app/election"
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = "file:db/election.db"
+}
+
+model Voter {
+    userID String  @id
+    voted  Boolean @default(false)
+    // Cannot link with Ballot/Vote due to traceability
+}
+
+model Ballot {
+    id    Int    @id @default(autoincrement())
+    votes Vote[]
+}
+
+model Vote {
+    ballot    Ballot    @relation(fields: [ballotID], references: [id])
+    candidate Candidate @relation(references: [id], fields: [candidateID])
+    position  Int
+
+    ballotID    Int
+    candidateID Int
+
+    @@unique([ballotID, candidateID])
+}
+
+model Candidate {
+    id   Int    @id @default(autoincrement())
+    name String
+
+    votes Vote[]
+}
