@@ -8,12 +8,12 @@
 	} = $props();
 </script>
 
-<div>
-	<div>
+<header>
+	<nav>
 		<a href="/">UWCS Elecom</a>
 		<a href="/e">Elections</a>
 		<a href="/c">Competitions</a>
-	</div>
+	</nav>
 	<div>
 		{#if uniID}
 			<div>
@@ -32,4 +32,17 @@
 			</div>
 		{/if}
 	</div>
-</div>
+</header>
+
+<style>
+	header {
+		background-color: grey;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		& nav {
+			height: 100%;
+			display: flex;
+		}
+	}
+</style>
