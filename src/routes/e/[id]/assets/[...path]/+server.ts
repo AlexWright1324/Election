@@ -1,4 +1,5 @@
 import { createReadStream } from "node:fs"
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { constants, access, stat } from "node:fs/promises"
 import { join } from "node:path"
 import { error } from "@sveltejs/kit"

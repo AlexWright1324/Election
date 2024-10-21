@@ -12,8 +12,8 @@ declare module "@auth/sveltekit" {
 }
 
 export const { handle, signIn, signOut } = SvelteKitAuth({
+	trustHost: true,
 	providers: [Keycloak],
-
 	callbacks: {
 		jwt({ token, profile }) {
 			if (profile) {

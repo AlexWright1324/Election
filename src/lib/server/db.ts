@@ -1,3 +1,13 @@
+import { env } from "$env/dynamic/private"
 import { PrismaClient } from "@prisma/client"
+import { createStoreFolder } from "./store"
 
-export const Prisma: PrismaClient = new PrismaClient()
+await createStoreFolder()
+
+export const Prisma: PrismaClient = new PrismaClient({
+	datasources: {
+		db: {
+			url: env.DATABASE_URL,
+		},
+	},
+})
