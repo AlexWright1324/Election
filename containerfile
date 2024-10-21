@@ -7,9 +7,9 @@ COPY package.json package.json
 RUN bun install
 
 COPY . .
+RUN bunx prisma generate
 RUN bun run build
 
-RUN bunx prisma generate
 
 EXPOSE 3000
 ENTRYPOINT ["bun", "./build"]
