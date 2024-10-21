@@ -3,10 +3,10 @@
 FROM oven/bun:alpine
 WORKDIR /app
 
-COPY project/package.json package.json
+COPY package.json package.json
 RUN bun install
 
-COPY project/ .
+COPY . .
 RUN bun run build
 
 EXPOSE 3000
