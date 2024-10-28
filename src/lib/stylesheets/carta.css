@@ -1,0 +1,83 @@
+.carta-theme__default.carta-editor {
+	border: 1px solid rgb(95,95,95);
+	border-radius: 0.5rem;
+}
+.carta-theme__default.carta-editor:focus-within {
+	outline: 2px solid #1f6feb;
+}
+.carta-theme__default.carta-editor .carta-wrapper {
+	padding: 1rem;
+	flex-grow: 1;
+}
+.carta-theme__default.carta-editor .carta-input, .carta-theme__default.carta-editor .carta-renderer {
+	min-height: 120px;
+	max-height: 160px;
+	overflow: auto;
+}
+.carta-theme__default.carta-editor .carta-font-code {
+	font-size: 1.1rem;
+	caret-color: black;
+}
+.carta-theme__default.carta-editor .carta-toolbar {
+	height: 2.5rem;
+	background-color: rgb(95,95,95);
+	border-top-left-radius: 0.5rem;
+	border-top-right-radius: 0.5rem;
+}
+.carta-theme__default.carta-editor .carta-toolbar .carta-icon {
+	width: 2rem;
+	height: 2rem;
+}
+.carta-theme__default.carta-editor .carta-toolbar .carta-icon:hover {
+	color: white;
+	background-color: #666666;
+}
+.carta-theme__default.carta-editor .carta-toolbar-left button, .carta-theme__default.carta-editor .carta-toolbar-right, .carta-theme__default.carta-editor .carta-filler {
+	border-bottom: 1px solid rgb(95,95,95);
+}
+.carta-theme__default.carta-editor .carta-toolbar-left > *:first-child {
+	border-top-left-radius: 0.5rem;
+}
+.carta-theme__default.carta-editor .carta-toolbar-left > * {
+	padding-left: 1rem;
+	padding-right: 1rem;
+	font-size: 0.95rem;
+}
+.carta-theme__default.carta-editor .carta-toolbar-left button {
+	height: 100%;
+}
+.carta-theme__default.carta-editor .carta-toolbar-left .carta-active {
+	background-color: rgb(95,95,95);
+	color: white;
+	border-right: 1px solid rgb(95,95,95);
+	border-bottom: 1px solid rgb(95,95,95);
+}
+.carta-theme__default.carta-editor .carta-toolbar-left .carta-active:not(:first-child) {
+	border-left: 1px solid rgb(95,95,95);
+}
+.carta-theme__default.carta-editor .carta-toolbar-right {
+	padding-right: 12px;
+}
+.carta-theme__default.carta-editor .carta-icons-menu {
+	padding: 8px;
+	border: 1px solid rgb(95,95,95);
+	border-radius: 6px;
+	min-width: 180px;
+}
+.carta-theme__default.carta-editor .carta-icons-menu .carta-icon-full {
+	padding-left: 6px;
+	padding-right: 6px;
+	margin-top: 2px;
+}
+.carta-theme__default.carta-editor .carta-icons-menu .carta-icon-full:first-child {
+	margin-top: 0;
+}
+.carta-theme__default.carta-editor .carta-icons-menu .carta-icon-full:hover {
+	color: white;
+	background-color: rgb(95,95,95);
+}
+.carta-theme__default.carta-editor .carta-icons-menu .carta-icon-full span {
+	margin-left: 6px;
+	color: white;
+	font-size: 0.85rem;
+}

@@ -24,5 +24,8 @@
 <style>
 	main {
 		flex: 1;
+		width: 100%;
+		max-width: var(--page-width);
+		padding: 0 1rem;
 	}
 </style>

@@ -7,7 +7,7 @@ let { data } = $props()
 <h1>{data.election.name}</h1>
 {#if data.admin}
 	<p>You Are an Admin</p>
-	<a href="/e/{data.election.id}/edit">Edit Election</a>
+	<a href="/election/{data.election.id}/edit">Edit Election</a>
 {/if}
 
 <form method="post">

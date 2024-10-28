@@ -1,21 +1,66 @@
-@import "./the-new-css-reset.css";
+@import "@unocss/reset/tailwind.css";
+@import "$lib/stylesheets/carta.css";
 
-/* Accessibility */
-:focus-visible {
-    outline: 2px solid #007aff;
-    border-radius: 5px;
+:root {
+    --page-width: 1200px;
+    --app-color-1: #202429;
+    --app-color-2: #2c333b;
+    --app-color-3: #7aa5d2;
+    --app-color-4: #eeeeee;
 }
 
-html, body {
+html,
+body {
     height: 100%;
     width: 100%;
 }
 
 body {
+    font-family: "Inter", sans-serif;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    background-color: var(--app-color-2);
+    color: var(--app-color-4);
 }
 
-:where(.carta-theme__default, .carta-theme__default *:not(svg *, symbol *)) {
-    all: revert;
+h1 {
+    font-size: 2rem;
+}
+
+h2 {
+    font-size: 1.5rem;
+}
+
+h3 {
+    font-size: 1.25rem;
+}
+
+.app-btn {
+    display: inline-block;
+    background-color: rgb(195, 195, 195);
+    border-radius: 5px;
+    padding: 0.5rem 1rem;
+
+    &:hover {
+        cursor: pointer;
+        background-color: rgb(180, 180, 180);
+    }
+}
+
+.app-btn-bar {
+    display: flex;
+    align-items: center;
+    background-color: rgb(180, 180, 180);
+    border-radius: 20px;
+    height: 48px;
+
+    >a,
+    >form>button {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        padding: 0 1rem;
+        color: rgb(100, 100, 100);
+    }
 }

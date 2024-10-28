@@ -26,12 +26,13 @@ CREATE TABLE "Login" (
 -- CreateTable
 CREATE TABLE "Election" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "name" TEXT NOT NULL,
-    "description" TEXT NOT NULL DEFAULT '',
+    "name" TEXT NOT NULL DEFAULT 'New Election',
+    "description" TEXT NOT NULL DEFAULT 'Sample Description',
     "start" DATETIME,
     "end" DATETIME,
     "candidateStart" DATETIME,
-    "candidateEnd" DATETIME
+    "candidateEnd" DATETIME,
+    "published" BOOLEAN NOT NULL DEFAULT false
 );
 
 -- CreateTable
@@ -39,14 +40,14 @@ CREATE TABLE "Voter" (
     "userID" TEXT NOT NULL PRIMARY KEY,
     "voted" BOOLEAN NOT NULL DEFAULT false,
     "electionID" INTEGER NOT NULL,
-    CONSTRAINT "Voter_electionID_fkey" FOREIGN KEY ("electionID") REFERENCES "Election" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "Voter_electionID_fkey" FOREIGN KEY ("electionID") REFERENCES "Election" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "Ballot" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "electionID" INTEGER NOT NULL,
-    CONSTRAINT "Ballot_electionID_fkey" FOREIGN KEY ("electionID") REFERENCES "Election" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "Ballot_electionID_fkey" FOREIGN KEY ("electionID") REFERENCES "Election" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -55,17 +56,18 @@ CREATE TABLE "Vote" (
     "roleID" INTEGER NOT NULL,
     "ballotID" INTEGER NOT NULL,
     "candidateID" INTEGER NOT NULL,
-    CONSTRAINT "Vote_ballotID_fkey" FOREIGN KEY ("ballotID") REFERENCES "Ballot" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "Vote_roleID_fkey" FOREIGN KEY ("roleID") REFERENCES "Role" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "Vote_candidateID_fkey" FOREIGN KEY ("candidateID") REFERENCES "Candidate" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "Vote_ballotID_fkey" FOREIGN KEY ("ballotID") REFERENCES "Ballot" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "Vote_roleID_fkey" FOREIGN KEY ("roleID") REFERENCES "Role" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "Vote_candidateID_fkey" FOREIGN KEY ("candidateID") REFERENCES "Candidate" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "Role" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "name" TEXT NOT NULL,
+    "name" TEXT NOT NULL DEFAULT 'New Role',
+    "seatsToFill" INTEGER NOT NULL DEFAULT 1,
     "electionID" INTEGER NOT NULL,
-    CONSTRAINT "Role_electionID_fkey" FOREIGN KEY ("electionID") REFERENCES "Election" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "Role_electionID_fkey" FOREIGN KEY ("electionID") REFERENCES "Election" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -73,7 +75,7 @@ CREATE TABLE "Candidate" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "description" TEXT NOT NULL DEFAULT '',
     "roleID" INTEGER NOT NULL,
-    CONSTRAINT "Candidate_roleID_fkey" FOREIGN KEY ("roleID") REFERENCES "Role" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "Candidate_roleID_fkey" FOREIGN KEY ("roleID") REFERENCES "Role" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable

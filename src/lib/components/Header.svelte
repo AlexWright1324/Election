@@ -1,48 +1,76 @@
 <script lang="ts">
-	import { SignIn, SignOut } from '@auth/sveltekit/components';
+	import { SignIn, SignOut } from "@auth/sveltekit/components";
 
 	let {
-		uniID
+		uniID,
 	}: {
 		uniID?: string;
 	} = $props();
 </script>
 
 <header>
-	<nav>
-		<a href="/">UWCS Elecom</a>
-		<a href="/e">Elections</a>
-		<a href="/c">Competitions</a>
-	</nav>
 	<div>
-		{#if uniID}
-			<div>
-				<p>
-					User: u{uniID}
-				</p>
-				<SignOut>
-					<span slot="submitButton">Logout</span>
+		<nav>
+			<a href="/">UWCS Elecom</a>
+			<a href="/election">Elections</a>
+			<a href="/competition">Competitions</a>
+		</nav>
+		<div>
+			{#if uniID}
+				<SignOut className="AuthButton">
+					<div slot="submitButton">
+						<p>
+							User: u{uniID}
+						</p>
+						<p>Logout</p>
+					</div>
 				</SignOut>
-			</div>
-		{:else}
-			<div>
-				<SignIn provider="keycloak">
-					<span slot="submitButton">Login</span>
+			{:else}
+				<SignIn provider="keycloak" className="AuthButton">
+					<div slot="submitButton">
+						<p>Login</p>
+					</div>
 				</SignIn>
-			</div>
-		{/if}
+			{/if}
+		</div>
 	</div>
 </header>
 
 <style>
 	header {
-		background-color: grey;
+		flex-shrink: 0;
 		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		& nav {
-			height: 100%;
+		min-height: 64px;
+		width: 100%;
+		justify-content: center;
+		margin-bottom: 1rem;
+		background-color: var(--app-color-1);
+
+		& > div {
 			display: flex;
+			height: 100%;
+			width: 100%;
+			justify-content: space-between;
+			max-width: var(--page-width);
 		}
+	}
+
+	nav {
+		& a {
+			display: inline-flex;
+			align-items: center;
+			padding: 0 1rem;
+			height: 100%;
+
+			&:hover {
+				background-color: lch(from var(--app-color-1) calc(l - 5) c h);
+			}
+		}
+	}
+
+	:global(.AuthButton) {
+		display: flex;
+		height: 100%;
+		padding: 0 1rem;
 	}
 </style>
