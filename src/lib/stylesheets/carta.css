@@ -16,7 +16,8 @@
 }
 .carta-theme__default.carta-editor .carta-font-code {
 	font-size: 1.1rem;
-	caret-color: black;
+	caret-color: inherit;
+	color: inherit;
 }
 .carta-theme__default.carta-editor .carta-toolbar {
 	height: 2.5rem;

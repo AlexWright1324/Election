@@ -20,10 +20,6 @@
     );
 </script>
 
-<nav class="app-btn-bar">
-    <a href="/election/{data.election.id}/edit/roles">Roles</a>
-</nav>
-
 <form
     method="post"
     action="?/update"
@@ -47,10 +43,6 @@
 
 <h2>Description Editor</h2>
 <MarkdownEditor {carta} bind:value={$updateForm.description} mode="tabs" />
-
-<form method="post" action="?/delete">
-    <button type="submit" class="app-btn">Delete Election</button>
-</form>
 
 <style>
     #cover-image {

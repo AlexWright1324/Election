@@ -10,15 +10,17 @@ export const load: PageServerLoad = async ({ parent }) => {
 			published: true,
 		},
 	})
-	const managedElections = await Prisma.election.findMany({
-		where: {
-			admins: {
-				some: {
-					uniID: session?.user?.uniID,
+	const managedElections = session?.user.uniID
+		? await Prisma.election.findMany({
+				where: {
+					admins: {
+						some: {
+							uniID: session.user.uniID,
+						},
+					},
 				},
-			},
-		},
-	})
+			})
+		: []
 
 	return {
 		elections,

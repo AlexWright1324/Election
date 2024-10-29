@@ -1,22 +1,47 @@
 <script lang="ts">
-import { Markdown } from "carta-md"
-import { carta } from "$lib/client/carta"
-let { data } = $props()
+	import { Markdown } from "carta-md";
+	import { carta } from "$lib/client/carta";
+    import ElectionCard from "$lib/components/ElectionCard.svelte";
+	let { data } = $props();
 </script>
 
-<h1>{data.election.name}</h1>
 {#if data.admin}
-	<p>You Are an Admin</p>
-	<a href="/election/{data.election.id}/edit">Edit Election</a>
+	<div class="app-btn-bar">
+		<p style="font-weight: bold">Admin</p>
+		<a href="/election/{data.election.id}/edit">Edit Election</a>
+	</div>
 {/if}
+
+<div class="election-page">
+	<ElectionCard election={data.election} link={false} />
+	
+	<div class="election-page-content">
+		<Markdown {carta} value={data.election.description} />
+	</div>
+</div>
+
+h1
 
 <form method="post">
 	<h1>Be a Candidate</h1>
 	<label for="role">Roles</label>
 	<select name="role">
 		{#each data.election.roles as role}
-			<option value={role.id}>{role.name}</option>
+		<option value={role.id}>{role.name}</option>
 		{/each}
 	</select>
 </form>
-<Markdown {carta} value={data.election.description}/>
+
+<style>
+	.election-page {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1rem;
+
+		> .election-page-content {
+			flex-grow: 1;
+			display: flex;
+			flex-direction: column;
+		}
+	}
+</style>

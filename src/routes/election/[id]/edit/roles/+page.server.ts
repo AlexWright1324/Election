@@ -1,4 +1,4 @@
-import { error, fail } from "@sveltejs/kit"
+import { fail } from "@sveltejs/kit"
 import type { PageServerLoad } from "./$types"
 
 import { Prisma } from "$lib/server/db"
@@ -18,40 +18,8 @@ const deleteRoleSchema = z.object({
 	id: z.number(),
 })
 
-export const load: PageServerLoad = async ({ parent, params }) => {
-	const { session } = await parent()
-
-	if (!session?.user?.uniID) {
-		error(403, "You are not logged in")
-	}
-
-	const election = await Prisma.election.findUnique({
-		where: {
-			id: Number(params.id),
-			admins: {
-				some: {
-					uniID: session.user.uniID,
-				},
-			},
-		},
-		include: {
-			admins: true,
-			roles: {
-				include: {
-					candidates: true,
-				},
-			},
-			voters: {
-				select: {
-					userID: true,
-				},
-			},
-		},
-	})
-
-	if (!election) {
-		error(403, "You are not an admin")
-	}
+export const load: PageServerLoad = async ({ parent }) => {
+	const { election } = await parent()
 
 	return {
 		election,

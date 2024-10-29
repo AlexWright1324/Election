@@ -24,7 +24,7 @@
         <input type="number" name="seatsToFill" min="1" bind:value={role.seatsToFill} />
         <button type="submit" class="app-btn">Save</button>
     </form>
-    <form method="post" action="?/deleteRole" use:editRoleEnhance>
+    <form method="post" action="?/deleteRole" use:enhance>
         <input type="hidden" name="id" bind:value={role.id} />
         <button type="submit" class="app-btn">Delete</button>
     </form>
