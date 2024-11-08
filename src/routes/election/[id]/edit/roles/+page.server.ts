@@ -84,7 +84,7 @@ export const actions = {
 			return fail(400)
 		}
 
-		if (!isElectionAdmin(Number(params.id), session.user.uniID)) {
+		if (!(await isElectionAdmin(Number(params.id), session.user.uniID))) {
 			return fail(403, { message: "You are not an admin" })
 		}
 

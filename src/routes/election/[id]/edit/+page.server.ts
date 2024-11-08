@@ -20,24 +20,11 @@ const updateSchema = z.object({
 		}),
 })
 
-const editRoleSchema = z.object({
-	id: z.number(),
-	name: z.string(),
-	seatsToFill: z.number().refine((n) => n >= 1),
-})
-
-const deleteRoleSchema = z.object({
-	id: z.number(),
-})
-
 export const load: PageServerLoad = async ({ parent }) => {
 	const { election } = await parent()
 
 	return {
-		election,
 		updateForm: await superValidate(election, zod(updateSchema)),
-		editRoleForm: await superValidate(zod(editRoleSchema)),
-		deleteRoleForm: await superValidate(zod(deleteRoleSchema)),
 	}
 }
 
@@ -84,7 +71,7 @@ export const actions = {
 			return fail(400)
 		}
 
-		if (!isElectionAdmin(Number(params.id), session.user.uniID)) {
+		if (!(await isElectionAdmin(Number(params.id), session.user.uniID))) {
 			return fail(403, { message: "You are not an admin" })
 		}
 

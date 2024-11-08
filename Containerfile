@@ -31,13 +31,10 @@ RUN bun run build
 FROM base AS release
 COPY --from=prerelease /app/build ./build
 COPY --from=prerelease /app/node_modules ./node_modules
-COPY --from=prerelease /app/package.json ./
-
-RUN mkdir -p /app/store
-RUN chown bun:bun /app/store
-VOLUME /app/store
+COPY --from=prerelease /app/package.json ./package.json
 
 USER bun
+VOLUME /app/store
 EXPOSE 3000/tcp
 ENV DATABASE_URL=file:/app/store/db.sqlite
 ENTRYPOINT ["bun", "--bun",  "./build"]

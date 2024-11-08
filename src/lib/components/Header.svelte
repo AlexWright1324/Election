@@ -45,6 +45,7 @@
 		justify-content: center;
 		margin-bottom: 1rem;
 		background-color: var(--app-color-1);
+		box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 
 		& > div {
 			display: flex;

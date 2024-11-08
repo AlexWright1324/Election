@@ -13,17 +13,25 @@
 {/if}
 {#if data.managedElections.length > 0}
 	<h1>Your Elections</h1>
+	<div class="election-cards">
+		{#each data.managedElections as election}
+			<ElectionCard {election} />
+		{/each}
+	</div>
 {/if}
-{#each data.managedElections as election}
-	<ElectionCard {election} />
-{/each}
 
 <h1>Elections</h1>
 
-<ul>
+<div class="election-cards">
 	{#each data.elections as election}
-		<li>
-			<ElectionCard {election} />
-		</li>
+		<ElectionCard {election} />
 	{/each}
-</ul>
+</div>
+
+<style>
+	.election-cards {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1rem;
+	}
+</style>

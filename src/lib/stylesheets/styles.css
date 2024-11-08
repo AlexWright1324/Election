@@ -3,10 +3,10 @@
 
 :root {
     --page-width: 1200px;
-    --app-color-1: #202429;
-    --app-color-2: #2c333b;
-    --app-color-3: #7aa5d2;
-    --app-color-4: #eeeeee;
+    --app-color-1: hsl(212, 15%, 15%);
+    --app-color-2: hsl(212, 20%, 20%);
+    --app-color-3: hsl(212, 45%, 45%);
+    --app-color-4: hsl(0, 0%, 93%);
 }
 
 html,
@@ -29,11 +29,25 @@ h1 {
 }
 
 h2 {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
 }
 
 h3 {
+    font-size: 1.5rem;
+}
+
+h4 {
     font-size: 1.25rem;
+}
+
+ul {
+    list-style-type: disc;
+    padding-left: 1rem;
+}
+
+blockquote {
+    border-left: 2px solid var(--app-color-3);
+    padding-left: 1rem;
 }
 
 .app-btn,

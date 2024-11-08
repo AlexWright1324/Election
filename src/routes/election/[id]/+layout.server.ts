@@ -1,15 +1,21 @@
 import { Prisma } from "$lib/server/db"
+import { isElectionAdmin } from "$lib/server/election"
 import { error } from "@sveltejs/kit"
-import type { PageServerLoad } from "./$types"
+import type { LayoutServerLoad } from "./$types"
 
-export const load: PageServerLoad = async ({ parent, params }) => {
+export const load: LayoutServerLoad = async ({ parent, params }) => {
 	const { session } = await parent()
 
 	const id = Number(params.id)
 
+	const admin = session?.user?.uniID
+		? await isElectionAdmin(id, session.user.uniID)
+		: false
+
 	const election = await Prisma.election.findUnique({
 		where: {
 			id,
+			published: admin ? undefined : true,
 		},
 		include: {
 			roles: {
@@ -23,18 +29,6 @@ export const load: PageServerLoad = async ({ parent, params }) => {
 	if (!election) {
 		error(404, "Election not found")
 	}
-
-	const admin =
-		(await Prisma.election.findUnique({
-			where: {
-				id: election.id,
-				admins: {
-					some: {
-						uniID: session?.user?.uniID,
-					},
-				},
-			},
-		})) != null
 
 	return {
 		election,
