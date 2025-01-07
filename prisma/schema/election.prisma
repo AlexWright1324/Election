@@ -8,19 +8,23 @@ model Election {
   candidateEnd   DateTime?
   published      Boolean   @default(false)
 
-  admins  User[]
-  roles   Role[]
-  voters  Voter[]
-  ballots Ballot[]
+  admins     User[]
+  roles      Role[]
+  voters     Voter[]
+  ballots    Ballot[]
+  candidates Candidate[]
 }
 
 model Voter {
-  userID String  @id
-  voted  Boolean @default(false)
+  user     User     @relation(fields: [userID], references: [uniID], onDelete: Cascade)
+  election Election @relation(fields: [electionID], references: [id], onDelete: Cascade)
+  voted    Boolean  @default(false)
 
-  election   Election @relation(fields: [electionID], references: [id], onDelete: Cascade)
+  userID     String
   electionID Int
   // Cannot link with Ballot/Vote due to traceability
+
+  @@unique([userID, electionID])
 }
 
 model Ballot {
@@ -42,14 +46,15 @@ model Vote {
   ballotID    Int
   candidateID Int
 
-  @@unique([ballotID, candidateID])
+  // Only one vote per role per ballot
+  @@unique([ballotID, roleID])
 }
 
 model Role {
   id          Int      @id @default(autoincrement())
-  election    Election @relation(fields: [electionID], references: [id], onDelete: Cascade)
   name        String   @default("New Role")
   seatsToFill Int      @default(1)
+  election    Election @relation(fields: [electionID], references: [id], onDelete: Cascade)
 
   electionID Int
 
@@ -58,13 +63,14 @@ model Role {
 }
 
 model Candidate {
-  id          Int    @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   name        String
-  description String @default("")
-  role        Role   @relation(fields: [roleID], references: [id], onDelete: Cascade)
+  description String   @default("")
+  election    Election @relation(fields: [electionID], references: [id], onDelete: Cascade)
 
-  roleID Int
+  electionID Int
 
   users User[]
+  roles Role[]
   votes Vote[]
 }

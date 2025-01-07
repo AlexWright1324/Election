@@ -1,37 +1,46 @@
-import { Prisma } from "$lib/server/db"
-import { isElectionAdmin } from "$lib/server/election"
 import { error } from "@sveltejs/kit"
 import type { LayoutServerLoad } from "./$types"
+
+import { Prisma } from "$lib/server/db"
 
 export const load: LayoutServerLoad = async ({ parent, params }) => {
 	const { session } = await parent()
 
-	const id = Number(params.id)
+	if (!session?.user?.uniID) {
+		error(403, "You are not logged in")
+	}
 
-	const admin = session?.user?.uniID
-		? await isElectionAdmin(id, session.user.uniID)
-		: false
+	const electionID = Number(params.electionID)
 
 	const election = await Prisma.election.findUnique({
 		where: {
-			id,
-			published: admin ? undefined : true,
+			id: electionID,
+			admins: {
+				some: {
+					uniID: session.user.uniID,
+				},
+			},
 		},
 		include: {
+			admins: true,
 			roles: {
 				include: {
 					candidates: true,
+				},
+			},
+			voters: {
+				select: {
+					userID: true,
 				},
 			},
 		},
 	})
 
 	if (!election) {
-		error(404, "Election not found")
+		error(403, "You are not an admin")
 	}
 
 	return {
 		election,
-		admin,
 	}
 }

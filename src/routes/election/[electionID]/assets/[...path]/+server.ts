@@ -2,9 +2,10 @@ import { join, parse } from "node:path"
 import PlaceHolderImage from "$lib/images/placeholder.png"
 import { error, redirect } from "@sveltejs/kit"
 import type { RequestHandler } from "./$types"
+import { storePath } from "$lib/server/store"
 
 export const GET: RequestHandler = async ({ params }) => {
-	const filePath = join("store", "elections", params.id, params.path)
+	const filePath = join(storePath, "elections", params.electionID, params.path)
 
 	const file = Bun.file(filePath)
 	if (!(await file.exists())) {

@@ -1,29 +1,34 @@
-import { rm } from "node:fs/promises"
+import { join } from "node:path"
+import { rm, mkdir } from "node:fs/promises"
 import { Prisma } from "$lib/server/db"
+import { storePath } from "$lib/server/store"
 
-export const isElectionAdmin = async (
-	electionID: number,
-	userID: string,
-): Promise<boolean> => {
-	const election = await Prisma.election.findUnique({
-		where: {
-			id: electionID,
-			admins: {
-				some: {
-					uniID: userID,
-				},
-			},
-		},
-	})
-	return election !== null
+export const isElectionAdmin = async (electionID: number, userID: string): Promise<boolean> => {
+  const election = await Prisma.election.findUnique({
+    where: {
+      id: electionID,
+      admins: {
+        some: {
+          uniID: userID,
+        },
+      },
+    },
+  })
+  return election !== null
 }
 
 export const deleteElection = async (electionID: number) => {
-	await Prisma.election.delete({
-		where: {
-			id: electionID,
-		},
-	})
+  await Prisma.election.delete({
+    where: {
+      id: electionID,
+    },
+  })
 
-	await rm(`store/elections/${electionID}`, { recursive: true, force: true })
+  const path = join(storePath, "elections", electionID.toString())
+  await rm(path, { recursive: true, force: true })
+}
+
+export const createElection = async (id: string) => {
+  const path = join(storePath, "elections", id, "candidates")
+  await mkdir(path, { recursive: true })
 }

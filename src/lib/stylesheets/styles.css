@@ -99,8 +99,7 @@ input[type="file"]::file-selector-button:hover {
             background-color: lch(from var(--app-color-2) calc(l + 10) c h);
         }
     }
-
-    .app-btn-bar-current {
+    [aria-current="page"] {
         background-color: lch(from var(--app-color-2) calc(l + 10) c h);
     }
 }
@@ -123,4 +122,13 @@ input[type="file"] {
     &::file-selector-button {
         border-radius: 0px;
     }
+}
+
+input[type="number"] {
+    background: transparent;
+    border-radius: 9999px;
+    padding: 0.2rem 0.5rem;
+    display: inline-block;
+    max-width: 100px;
+    border: 2px solid var(--app-color-3);
 }

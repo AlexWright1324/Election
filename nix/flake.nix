@@ -20,17 +20,19 @@
 
       perSystem =
         { config, pkgs, ... }:
+        let
+        in
+        #prisma-engines = pkgs.callPackage ./prisma-engines.nix { };
         {
           pre-commit.settings.hooks = {
             nil.enable = true;
             nixfmt-rfc-style.enable = true;
-
-            biome.enable = true;
           };
 
           devShells.default = pkgs.mkShell {
             inputsFrom = [ config.pre-commit.devShell ];
             packages = with pkgs; [
+              nodejs
               bun
               act # Testing Workflows - Requires Docker (not Podman)
             ];
@@ -40,6 +42,7 @@
               export PRISMA_SCHEMA_ENGINE_BINARY="${prisma-engines}/bin/schema-engine"
               export PRISMA_QUERY_ENGINE_LIBRARY="${prisma-engines}/lib/libquery_engine.node"
               export PRISMA_INTROSPECTION_ENGINE_BINARY="${prisma-engines}/bin/introspection-engine"
+              export LD_LIBRARY_PATH="${stdenv.cc.cc.lib}/lib"
             '';
           };
 

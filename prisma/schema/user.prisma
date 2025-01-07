@@ -1,8 +1,9 @@
 model User {
     uniID String @id
+    name  String
 
-    elections  Election[]
-    candidates Candidate[]
-
-    competitions Competition[]
+    electionAdmins Election[]
+    candidates     Candidate[]
+    voters         Voter[]
+    competitions   Competition[]
 }

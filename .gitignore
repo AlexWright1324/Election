@@ -26,6 +26,5 @@ vite.config.ts.timestamp-*
 /prisma/db.sqlite-journal
 
 # Nix
-.direnv
-.pre-commit-config.yaml
-just-flake.just
+/.direnv
+/.pre-commit-config.yaml
