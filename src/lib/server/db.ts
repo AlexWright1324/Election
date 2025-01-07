@@ -1,12 +1,10 @@
 import { env } from "$env/dynamic/private"
-import { PrismaClient, Prisma as prisma } from "@prisma/client"
+import { PrismaClient } from "@prisma/client"
 
-const PrismaA = new PrismaClient({
+export const Prisma = new PrismaClient({
   datasources: {
     db: {
       url: env.DATABASE_URL,
     },
   },
 })
-
-export const Prisma = PrismaA

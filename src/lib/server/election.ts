@@ -17,6 +17,20 @@ export const isElectionAdmin = async (electionID: number, userID: string): Promi
   return election !== null
 }
 
+export const isCandidateAdmin = async (candidateID: number, userID: string): Promise<boolean> => {
+  const candidate = await Prisma.candidate.findUnique({
+    where: {
+      id: candidateID,
+      users: {
+        some: {
+          uniID: userID,
+        },
+      },
+    },
+  })
+  return candidate !== null
+}
+
 export const deleteElection = async (electionID: number) => {
   await Prisma.election.delete({
     where: {

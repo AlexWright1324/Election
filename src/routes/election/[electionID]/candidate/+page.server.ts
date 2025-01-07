@@ -51,23 +51,48 @@ export const actions = {
       return fail(400, { message: "You are already a candidate for this role" })
     }
 
-    // Create candidate
-    candidate = await Prisma.candidate.create({
-      data: {
-        name: session.user.name,
-        electionID: election.id,
-        roles: {
-          connect: {
-            id: role.id,
-          },
-        },
+    candidate = await Prisma.candidate.findFirst({
+      where: {
+        electionID,
         users: {
-          connect: {
+          some: {
             uniID: session.user.uniID,
           },
         },
       },
     })
+
+    if (candidate) {
+      candidate = await Prisma.candidate.update({
+        where: {
+          id: candidate.id,
+        },
+        data: {
+          roles: {
+            connect: {
+              id: role.id,
+            },
+          },
+        },
+      })
+    } else {
+      candidate = await Prisma.candidate.create({
+        data: {
+          name: session.user.name,
+          electionID: election.id,
+          roles: {
+            connect: {
+              id: role.id,
+            },
+          },
+          users: {
+            connect: {
+              uniID: session.user.uniID,
+            },
+          },
+        },
+      })
+    }
 
     return redirect(303, `/election/${electionID}/candidate/${candidate.id}`)
   },
