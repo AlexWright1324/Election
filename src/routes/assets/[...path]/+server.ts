@@ -8,7 +8,6 @@ import { storePath } from "$lib/server/store"
 
 export const GET: RequestHandler = async ({ params }) => {
   const filePath = join(storePath, params.path)
-  console.log(filePath)
 
   const file = Bun.file(filePath)
   if (!(await file.exists())) {

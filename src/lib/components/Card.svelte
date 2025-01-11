@@ -1,61 +1,50 @@
 <script lang="ts">
-    import type { Snippet } from "svelte";
+  import type { Snippet } from "svelte"
 
-    let {
-        href,
-        image,
-        children,
-    }: {
-        href?: string;
-        image?: string;
-        children?: Snippet;
-    } = $props();
+  let {
+    href,
+    image,
+    children,
+    footer,
+  }: {
+    href?: string
+    image?: string
+    children?: Snippet
+    footer?: Snippet
+  } = $props()
 </script>
 
-<a {href} class="card" class:link={href}>
-    <img src={image} alt="Card Cover" />
-    <div>
-        {#if children}
-        {@render children()}
-        {/if}
-    </div>
+<a {href} class="card">
+  <header>
+    <img src={image} alt="Card Cover Banner" />
+  </header>
+  <article>
+    {#if children}
+      {@render children()}
+    {/if}
+  </article>
+  {#if footer}
+    <footer>
+      {@render footer()}
+    </footer>
+  {/if}
 </a>
 
-<style>
-    .card {
-        max-width: 300px;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-
-        & > img {
-            width: 100%;
-        }
-
-        & > div {
-            width: 100%;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 0.5rem;
-        }
+<style lang="postcss">
+  a {
+    @apply block max-w-md overflow-hidden;
+    @apply card-hover;
+    @apply preset-filled-surface-900-100 border-[1px] border-surface-800-200 divide-y divide-surface-800-200;
+  }
+  header {
+    > img {
+      @apply w-full aspect-[16/9] object-cover;
     }
-
-    .link {
-        max-width: 250px;
-        height: 450px;
-        border-radius: 20px;
-        border: 2px solid var(--app-color-3);
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-        transition: transform 0.1s ease-in-out;
-        
-        > div {
-            border-top: 2px solid var(--app-color-3);
-        }
-
-        &:hover {
-            transform: scale(1.01);
-        }
-    }
+  }
+  article {
+    @apply p-4;
+  }
+  footer {
+    @apply flex items-center justify-between p-4;
+  }
 </style>

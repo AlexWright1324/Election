@@ -5,16 +5,10 @@ import type { PageServerLoad } from "./$types"
 export const load: PageServerLoad = async ({ parent }) => {
   const { session } = await parent()
 
-  const select = {
-    id: true,
-    name: true
-  }
-
   const elections = await Prisma.election.findMany({
     where: {
       published: true,
     },
-    select
   })
   const managedElections = session?.user.uniID
     ? await Prisma.election.findMany({
@@ -25,7 +19,6 @@ export const load: PageServerLoad = async ({ parent }) => {
             },
           },
         },
-        select
       })
     : []
 

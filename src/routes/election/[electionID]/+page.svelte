@@ -1,20 +1,25 @@
 <script lang="ts">
   import { Markdown } from "carta-md"
+
+  import { getCandidateCoverImage, getElectionCoverImage } from "$lib/client/store"
+  import { seperateJoin } from "$lib/client/separate"
   import { carta } from "$lib/client/carta"
-  import ElectionCard from "$lib/components/ElectionCard.svelte"
-  import CandidateCard from "$lib/components/CandidateCard.svelte"
+
+  import Card from "$lib/components/Card.svelte"
   let { data } = $props()
 </script>
 
-<div class="election-page">
-  <ElectionCard election={data.election} link={false} />
-
-  <div class="election-page-content">
+<h1 class="h1">{data.election.name}</h1>
+<article>
+  <aside>
+    <img src={getElectionCoverImage(data.election.id)} alt="Election Banner" />
+  </aside>
+  <main>
     <Markdown {carta} value={data.election.description} />
-  </div>
-</div>
+  </main>
+</article>
 
-<h1>Candidates</h1>
+<h2 class="h2">Candidates</h2>
 {#each data.election.roles as role}
   <h2>{role.name}</h2>
   {#if role.candidates.some((c) => c.users.some((u) => u))}
@@ -26,7 +31,17 @@
     </form>
   {/if}
   {#each role.candidates as candidate}
-    <CandidateCard {candidate} href="/election/{data.election.id}/candidate/{candidate.id}" />
+    <Card
+      href="/election/{data.election.id}/candidate/{candidate.id}"
+      image={getCandidateCoverImage(data.election.id, candidate.id)}
+    >
+      <h3>{candidate.name}</h3>
+      {#if candidate.users.length > 1}
+        {#snippet footer()}
+          {seperateJoin(candidate.users.map((u) => u.name))}
+        {/snippet}
+      {/if}
+    </Card>
   {:else}
     <p>No Candidates</p>
   {/each}
@@ -34,16 +49,14 @@
   <p>No Roles</p>
 {/each}
 
-<style>
-  .election-page {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-
-    > .election-page-content {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
+<style lang="postcss">
+  article {
+    @apply flex flex-wrap gap-4;
+    > aside {
+      @apply w-full max-w-xs;
+    }
+    > main {
+      @apply flex-1;
     }
   }
 </style>

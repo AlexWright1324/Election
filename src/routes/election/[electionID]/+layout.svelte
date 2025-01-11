@@ -1,15 +1,18 @@
 <script lang="ts">
-  import { page } from "$app/state"
+  import Tabs from "$lib/components/tabs/Tabs.svelte"
+  import TabItem from "$lib/components/tabs/TabItem.svelte"
+
+
   let { data, children } = $props()
 </script>
 
 {#if data.admin}
   {@const url = `/election/${data.election.id}`}
-  <nav class="app-btn-bar">
-    <a href={url} aria-current={page.url.pathname === url ? "page" : undefined}> Preview </a>
-    <a href="{url}/edit" aria-current={page.url.pathname === url + "/edit" ? "page" : undefined}>Edit</a>
-    <a href="{url}/edit/roles" aria-current={page.url.pathname === url + "/edit/roles" ? "page" : undefined}>Roles</a>
-  </nav>
+  <Tabs name="Election Admin">
+    <TabItem href={url}>Preview</TabItem>
+    <TabItem href="{url}/edit">Edit</TabItem>
+    <TabItem href="{url}/edit/roles">Roles</TabItem>
+  </Tabs>
 {/if}
 
 {@render children()}

@@ -5,33 +5,23 @@
 </script>
 
 {#if data.session?.user?.uniID}
-	<div class="app-btn-bar">
-		<form method="post" action="?/create">
-			<button type="submit">Create New Election</button>
-		</form>
-	</div>
+	<form method="post" action="?/create">
+		<button type="submit" class="btn preset-tonal">Create New Election</button>
+	</form>
 {/if}
 {#if data.managedElections.length > 0}
-	<h1>Your Elections</h1>
-	<div class="election-cards">
+	<h2 class="h2">Your Elections</h2>
+	<div>
 		{#each data.managedElections as election}
 			<ElectionCard {election} />
 		{/each}
 	</div>
 {/if}
 
-<h1>Elections</h1>
+<h1 class="h1">Elections</h1>
 
 <div class="election-cards">
 	{#each data.elections as election}
 		<ElectionCard {election} />
 	{/each}
 </div>
-
-<style>
-	.election-cards {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 1rem;
-	}
-</style>

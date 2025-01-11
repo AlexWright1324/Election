@@ -1,7 +1,7 @@
 import { fail, redirect } from "@sveltejs/kit"
 import type { PageServerLoad } from "./$types"
 
-import { uploadImage } from "$lib/client/files"
+import { storeElectionCoverImage } from "$lib/server/store"
 import { Prisma } from "$lib/server/db"
 import { deleteElection, isElectionAdmin } from "$lib/server/election"
 
@@ -65,7 +65,7 @@ export const actions = {
     })
 
     if (form.data.image !== null) {
-      await uploadImage(form.data.image, ["elections", electionID.toString(), "cover.jpg"]).catch(() => {
+      await storeElectionCoverImage(electionID, form.data.image).catch(() => {
         return fail(500, { message: "Failed to upload image" })
       })
     }
@@ -76,7 +76,7 @@ export const actions = {
     const session = await locals.auth()
 
     if (!session?.user?.uniID) {
-      return fail(400)
+      return fail(401, { message: "You are not logged in" })
     }
 
     const electionID = Number(params.electionID)

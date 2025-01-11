@@ -1,6 +1,5 @@
 <footer>
 	<h3>Made by Alex Wright</h3>
-
 </footer>
 
 <style>
