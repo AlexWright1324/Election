@@ -4,6 +4,7 @@ model User {
 
     electionAdmins Election[]
     candidates     Candidate[]
+    candidateInvites CandidateInvite[]
     voters         Voter[]
     competitions   Competition[]
 }

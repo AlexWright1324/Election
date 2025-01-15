@@ -16,15 +16,15 @@ model Election {
 }
 
 model Voter {
-  user     User     @relation(fields: [userID], references: [uniID], onDelete: Cascade)
+  user     User     @relation(fields: [uniID], references: [uniID], onDelete: Cascade)
   election Election @relation(fields: [electionID], references: [id], onDelete: Cascade)
   voted    Boolean  @default(false)
 
-  userID     String
+  uniID      String
   electionID Int
   // Cannot link with Ballot/Vote due to traceability
 
-  @@unique([userID, electionID])
+  @@unique([uniID, electionID])
 }
 
 model Ballot {
@@ -70,7 +70,20 @@ model Candidate {
 
   electionID Int
 
-  users User[]
-  roles Role[]
-  votes Vote[]
+  users   User[]
+  roles   Role[]
+  votes   Vote[]
+  invites CandidateInvite[]
+}
+
+model CandidateInvite {
+  id        Int       @id @default(autoincrement())
+  candidate Candidate @relation(fields: [candidateID], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [uniID], references: [uniID], onDelete: Cascade)
+
+  candidateID Int
+  uniID       String
+
+  // Only one invite per candidate per user
+  @@unique([candidateID, uniID])
 }

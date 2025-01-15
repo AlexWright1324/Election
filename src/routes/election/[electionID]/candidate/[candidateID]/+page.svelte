@@ -1,53 +1,29 @@
 <script lang="ts">
   import { Markdown } from "carta-md"
-  import { getCandidateCoverImage } from "$lib/client/election"
-  import { carta } from "$lib/client/carta"
-  let { data } = $props()
 
-  let coverImgSrc = $state(getCandidateCoverImage(data.election.id, data.candidate.id))
+  import Card from "$lib/components/Card.svelte"
+  import { seperateJoin } from "$lib/client/separate"
+  import { getCandidateCoverImage } from "$lib/client/store"
+  import { carta } from "$lib/client/carta"
+
+  let { data } = $props()
 </script>
 
-<div class="candidate-page">
-  <div class="candidate-page-content" style="flex-grow: 0">
-    <img id="cover-image" src={coverImgSrc} alt="Candidate Portrait" />
-    <h1>{data.candidate.name}</h1>
-    Members:
-    <ul>
-      {#each data.candidate.users as user}
-        <li>
-          {user.name}
-        </li>
-      {/each}
-    </ul>
-    <br />
-    Running for
-    <ul>
-      {#each data.candidate.roles as role}
-        <li>
-          {role.name}
-        </li>
-      {/each}
-    </ul>
-  </div>
+<h1 class="h1">{data.candidate.name}</h1>
 
-  <div class="candidate-page-content">
-    <Markdown {carta} value={data.candidate.description} />
-  </div>
-</div>
+<article class="flex flex-wrap gap-x-4">
+  <aside class="max-w-xs mb-2">
+    <img src={getCandidateCoverImage(data.election.id, data.candidate.id)} alt="Candidate Banner" />
+    <h3 class="h3">Members</h3>
+    <p>
+      {seperateJoin(data.candidate.users.map((user) => user.name))}
+    </p>
+    <h3 class="h3">Running for</h3>
+    <p>
+      {seperateJoin(data.candidate.roles.map((role) => role.name))}
+    </p>
+  </aside>
+  <Markdown {carta} value={data.candidate.description} />
+</article>
 
-<style>
-  #cover-image {
-    width: 250px;
-  }
-  .candidate-page {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-
-    > .candidate-page-content {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-    }
-  }
-</style>
+<hr class="hr" />

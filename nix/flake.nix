@@ -20,9 +20,6 @@
 
       perSystem =
         { config, pkgs, ... }:
-        let
-        in
-        #prisma-engines = pkgs.callPackage ./prisma-engines.nix { };
         {
           pre-commit.settings.hooks = {
             nil.enable = true;

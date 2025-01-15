@@ -1,11 +1,11 @@
-import { fail, redirect } from "@sveltejs/kit"
 import type { PageServerLoad } from "./$types"
+import { redirect } from "@sveltejs/kit"
 
-import { storeElectionCoverImage } from "$lib/server/store"
 import { Prisma } from "$lib/server/db"
 import { deleteElection, isElectionAdmin } from "$lib/server/election"
+import { storeElectionCoverImage, zImage } from "$lib/server/store"
 
-import { message, superValidate } from "sveltekit-superforms"
+import { message, superValidate, fail } from "sveltekit-superforms"
 import { zod } from "sveltekit-superforms/adapters"
 import { z } from "zod"
 
@@ -17,16 +17,15 @@ const updateSchema = z.object({
   candidateStart: z.date().nullable(),
   candidateEnd: z.date().nullable(),
   published: z.boolean(),
-  image: z
-    .instanceof(File, { message: "Please upload an image" })
-    .nullable()
-    .refine((f) => f === null || f.size < 1024 * 1024 * 5, {
-      message: "Image size must be less than 5MB",
-    }),
+  image: zImage
 })
 
 export const load: PageServerLoad = async ({ parent }) => {
-  const { election } = await parent()
+  const { election, electionAdmin } = await parent()
+
+  if (!electionAdmin) {
+    return fail(403, { message: "You are not authorized to edit this election" })
+  }
 
   return {
     updateForm: await superValidate(election, zod(updateSchema)),
@@ -64,7 +63,7 @@ export const actions = {
       },
     })
 
-    if (form.data.image !== null) {
+    if (form.data.image) {
       await storeElectionCoverImage(electionID, form.data.image).catch(() => {
         return fail(500, { message: "Failed to upload image" })
       })

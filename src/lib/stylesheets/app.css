@@ -22,6 +22,38 @@ html.dark .shiki span {
 
 .carta-editor {
   @apply card preset-outlined-surface-200-800;
+
+  .carta-toolbar {
+    @apply h-auto min-w-0 w-full max-w-full !important;
+    @apply p-2 border-b-surface-200-800 border-b-[1px];
+
+    .carta-toolbar-left {
+      @apply gap-2;
+      button {
+        @apply btn;
+
+        &.carta-active {
+          @apply preset-filled-surface-900-100;
+        }
+
+        &:hover {
+          @apply preset-filled-surface-800-200;
+        }
+      }
+    }
+    .carta-toolbar-right {
+      @apply gap-1;
+
+      button {
+        @apply btn-icon m-0;
+
+        &:hover {
+          @apply preset-filled;
+        }
+      }
+    }
+  }
+
   .carta-wrapper {
     @apply p-2 flex-grow;
   }
@@ -40,33 +72,6 @@ html.dark .shiki span {
   @apply prose dark:prose-invert;
 }
 
-.carta-toolbar {
-  height: auto !important;
-  @apply p-2 border-b-surface-200-800 border-b-[1px];
-
-  .carta-toolbar-left {
-    @apply gap-2;
-    button {
-      @apply btn;
-
-      &.carta-active {
-        @apply preset-filled-surface-900-100;
-      }
-
-      &:hover {
-        @apply preset-filled-surface-800-200;
-      }
-    }
-  }
-  .carta-toolbar-right {
-    height: auto !important;
-    @apply flex-wrap wrap;
-    button {
-      @apply btn-icon;
-
-      &:hover {
-        @apply preset-filled;
-      }
-    }
-  }
+.carta-viewer {
+  @apply min-w-0 break-words;
 }

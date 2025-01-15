@@ -1,57 +1,67 @@
 <script lang="ts">
   import { carta } from "$lib/client/carta"
-  import { getElectionCoverImage } from "$lib/client/election"
+  import { getCandidateCoverImage } from "$lib/client/store"
 
   import { MarkdownEditor } from "carta-md"
   import { superForm } from "sveltekit-superforms"
+  import SuperDebug from "sveltekit-superforms"
+  import Unsaved from "$lib/components/modals/Unsaved.svelte"
 
   let { data } = $props()
 
-  let coverImgSrc = $state(getElectionCoverImage(data.election.id))
+  let coverImgSrc = $state(getCandidateCoverImage(data.election.id, data.candidate.id))
 
-  const { form, enhance, isTainted, tainted } = superForm(data.editForm, {
+  let unsavedModal: Unsaved
+
+  const { form, errors, enhance, isTainted, tainted } = superForm(data.editForm!, {
+    dataType: "json",
     resetForm: false,
     onUpdated: () => {
-      coverImgSrc = getElectionCoverImage(data.election.id)
+      coverImgSrc = getCandidateCoverImage(data.election.id, data.candidate.id)
     },
-    taintedMessage: async () => {
-      return confirm("You have unsaved changes. Are you sure you want to leave?")
-    },
+    taintedMessage: () => unsavedModal.taintedMessage(),
   })
+
+  let unsaved = $derived(isTainted($tainted))
 </script>
 
-<form method="post" action="?/update" enctype="multipart/form-data" use:enhance class="app-form">
-  {#if isTainted($tainted)}
-    <button type="submit" class="app-btn">Update Candidate Page</button>
-  {/if}
-  <input type="hidden" name="description" bind:value={$form.description} />
-  <h2>Name</h2>
-  <input type="text" name="name" bind:value={$form.name} />
-  <h2>Cover Image</h2>
-  <input type="file" name="image" accept="image/*" bind:value={$form.image} />
-</form>
+<Unsaved bind:this={unsavedModal} />
 
-<img id="cover-image" src={coverImgSrc} alt="Election Cover" />
+<div class="flex flex-wrap gap-2">
+  <button form="update" type="submit" class="btn preset-filled-primary-500" disabled={!unsaved}>Update Candidate</button
+  >
+</div>
 
-<h2>Description Editor</h2>
-<MarkdownEditor {carta} bind:value={$form.description} mode="tabs" />
-
-<form method="post" action="?/delete">
-  <button type="submit" class="app-btn red">Delete Candidate</button>
-</form>
-
-<style>
-  #cover-image {
-    width: 250px;
-  }
-  .app-form {
-    display: flex;
-    flex-direction: column;
-  }
-  button {
-    text-align: center;
-  }
-  .red {
-    background-color: rgb(100, 20, 20);
-  }
-</style>
+<div class="flex flex-wrap gap-4">
+  <form class="gap-4 grow" id="update" method="post" action="?/update" enctype="multipart/form-data" use:enhance>
+    <input type="hidden" name="description" bind:value={$form.description} />
+    <label class="label">
+      <span class="label-text">Name</span>
+      <input class="input" type="text" name="name" bind:value={$form.name} />
+    </label>
+    <label class="label">
+      <span class="label-text">Banner Image</span>
+      <img
+        class="p-4 max-w-xs max-h-[320px] preset-outlined-primary-200-800"
+        src={coverImgSrc}
+        alt="Candidate Banner"
+      />
+      <input class="input" type="file" name="image" accept="image/*" bind:value={$form.image} />
+    </label>
+    <span class="label-text">Roles</span>
+    <p class="text-error-500">
+      {$errors.roles?._errors}
+    </p>
+    {#each $form.roles as role}
+      <label class="flex items-center gap-x-2">
+        <input type="hidden" name="roleID" bind:value={role.id} />
+        <input class="checkbox" type="checkbox" bind:checked={role.checked} />
+        <p>{role.name}</p>
+      </label>
+    {/each}
+  </form>
+  <div class="grow max-w-full">
+    <h4 class="h4">Description Editor</h4>
+    <MarkdownEditor {carta} bind:value={$form.description} mode="tabs" />
+  </div>
+</div>

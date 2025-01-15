@@ -8,12 +8,12 @@ export const load: LayoutServerLoad = async ({ parent, params }) => {
 
   const id = Number(params.electionID)
 
-  const admin = session?.user?.uniID ? await isElectionAdmin(id, session.user.uniID) : false
+  const electionAdmin = session?.user?.uniID ? await isElectionAdmin(id, session.user.uniID) : false
 
   const election = await Prisma.election.findUnique({
     where: {
       id,
-      published: admin ? undefined : true,
+      published: electionAdmin ? undefined : true,
     },
     include: {
       roles: {
@@ -30,8 +30,8 @@ export const load: LayoutServerLoad = async ({ parent, params }) => {
                 },
                 where: {
                   uniID: session?.user?.uniID,
-                }
-              }
+                },
+              },
             },
           },
         },
@@ -43,8 +43,25 @@ export const load: LayoutServerLoad = async ({ parent, params }) => {
     error(404, "Election not found")
   }
 
+  const candidateInvites = await Prisma.candidateInvite.findMany({
+    where: {
+      candidate: {
+        electionID: id,
+      },
+      uniID: session?.user?.uniID,
+    },
+    include: {
+      candidate: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  })
+
   return {
     election,
-    admin,
+    electionAdmin,
+    candidateInvites,
   }
 }

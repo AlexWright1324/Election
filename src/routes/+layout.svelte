@@ -23,6 +23,6 @@
 
 <style lang="postcss">
 	main {
-		@apply max-w-screen-2xl mx-auto w-full p-4
+		@apply max-w-screen-2xl w-full min-w-0 mx-auto p-4 
 	}
 </style>

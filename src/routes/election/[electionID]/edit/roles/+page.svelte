@@ -1,4 +1,6 @@
 <script lang="ts">
+  import UnsavedModal from "$lib/components/modals/Unsaved.svelte"
+
   import { superForm } from "sveltekit-superforms"
 
   let { data } = $props()
@@ -6,10 +8,11 @@
   const { form, enhance, isTainted, tainted } = superForm(data.editRolesForm, {
     dataType: "json",
     resetForm: false,
-    taintedMessage: async () => {
-      return confirm("You have unsaved changes. Are you sure you want to leave?")
-    },
+    taintedMessage: () => unsavedModal.taintedMessage(),
   })
+
+  let unsavedModal: UnsavedModal
+  let unsaved = $derived(isTainted($tainted))
 
   const addRole = () => {
     $form.roles = [
@@ -22,15 +25,17 @@
     ]
   }
 
-  const removeRole = (index: number) => {
-    $form.roles = $form.roles.filter((_, i) => i !== index)
+  const removeRole = (roleID: number) => {
+    $form.roles = $form.roles.filter((_, i) => i !== roleID)
   }
 </script>
+
+<UnsavedModal bind:this={unsavedModal} />
 
 <form method="post" action="?/editRoles" use:enhance>
   <div class="flex flex-wrap gap-2">
     <button type="button" class="btn preset-tonal-primary mb-2" onclick={addRole}>Add Role</button>
-    <button type="submit" class="btn preset-filled-primary-500" disabled={!isTainted($tainted)}>Save</button>
+    <button type="submit" class="btn preset-filled-primary-500" disabled={!unsaved}>Save</button>
   </div>
   <ul>
     {#each $form.roles as role, index}

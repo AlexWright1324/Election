@@ -1,33 +1,34 @@
 <script lang="ts">
   import { Markdown } from "carta-md"
 
+  import Card from "$lib/components/Card.svelte"
   import { getCandidateCoverImage, getElectionCoverImage } from "$lib/client/store"
   import { seperateJoin } from "$lib/client/separate"
   import { carta } from "$lib/client/carta"
 
-  import Card from "$lib/components/Card.svelte"
   let { data } = $props()
 </script>
 
 <h1 class="h1">{data.election.name}</h1>
-<article>
-  <aside>
+
+<article class="flex flex-wrap gap-x-4">
+  <div class="max-w-xs mb-2">
     <img src={getElectionCoverImage(data.election.id)} alt="Election Banner" />
-  </aside>
-  <main>
-    <Markdown {carta} value={data.election.description} />
-  </main>
+  </div>
+  <Markdown {carta} value={data.election.description} />
 </article>
+
+<hr class="hr" />
 
 <h2 class="h2">Candidates</h2>
 {#each data.election.roles as role}
-  <h2>{role.name}</h2>
+  <h3 class="h3">{role.name}</h3>
   {#if role.candidates.some((c) => c.users.some((u) => u))}
     <p>You are already a candidate for this role</p>
   {:else}
     <form action="/election/{data.election.id}/candidate?/signup" method="POST">
       <input type="hidden" name="roleID" value={role.id} />
-      <button class="app-btn">Become a Candidate</button>
+      <button class="btn preset-tonal-primary">Become a Candidate</button>
     </form>
   {/if}
   {#each role.candidates as candidate}
@@ -49,14 +50,9 @@
   <p>No Roles</p>
 {/each}
 
-<style lang="postcss">
-  article {
-    @apply flex flex-wrap gap-4;
-    > aside {
-      @apply w-full max-w-xs;
-    }
-    > main {
-      @apply flex-1;
-    }
-  }
-</style>
+{#if data.candidateInvites.length > 0}
+  <h2 class="h2">Invites</h2>
+  {#each data.candidateInvites as invite}
+    Invite to become a candidate for {invite.candidate.name}
+  {/each}
+{/if}

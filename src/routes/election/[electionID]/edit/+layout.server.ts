@@ -28,11 +28,6 @@ export const load: LayoutServerLoad = async ({ parent, params }) => {
 					candidates: true,
 				},
 			},
-			voters: {
-				select: {
-					userID: true,
-				},
-			},
 		},
 	})
 
