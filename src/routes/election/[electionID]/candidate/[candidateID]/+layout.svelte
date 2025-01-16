@@ -10,6 +10,7 @@
   <Tabs name="Candidate Admin">
     <TabItem href={url}>Preview</TabItem>
     <TabItem href="{url}/edit">Edit</TabItem>
+    <TabItem href="{url}/edit/invite">Invite</TabItem>
   </Tabs>
 {/if}
 

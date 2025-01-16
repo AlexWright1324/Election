@@ -1,10 +1,10 @@
 import { join } from "node:path"
 import { rm, mkdir } from "node:fs/promises"
-import { Prisma } from "$lib/server/db"
+import { PrismaClient } from "$lib/server/db"
 import { storePath } from "$lib/server/store"
 
 export const isElectionAdmin = async (electionID: number, userID: string): Promise<boolean> => {
-  const election = await Prisma.election.findUnique({
+  const election = await PrismaClient.election.findUnique({
     where: {
       id: electionID,
       admins: {
@@ -18,7 +18,7 @@ export const isElectionAdmin = async (electionID: number, userID: string): Promi
 }
 
 export const isCandidateAdmin = async (candidateID: number, userID: string): Promise<boolean> => {
-  const candidate = await Prisma.candidate.findUnique({
+  const candidate = await PrismaClient.candidate.findUnique({
     where: {
       id: candidateID,
       users: {
@@ -32,7 +32,7 @@ export const isCandidateAdmin = async (candidateID: number, userID: string): Pro
 }
 
 export const deleteElection = async (electionID: number) => {
-  await Prisma.election.delete({
+  await PrismaClient.election.delete({
     where: {
       id: electionID,
     },

@@ -1,4 +1,4 @@
-import { Prisma } from "$lib/server/db"
+import { PrismaClient } from "$lib/server/db"
 import { fail, redirect } from "@sveltejs/kit"
 
 export const actions = {
@@ -12,7 +12,7 @@ export const actions = {
     }
     const electionID = Number(params.electionID)
 
-    const election = await Prisma.election.findUnique({
+    const election = await PrismaClient.election.findUnique({
       where: {
         id: electionID,
       },
@@ -21,7 +21,7 @@ export const actions = {
       return fail(404, { message: "Election not found" })
     }
 
-    const role = await Prisma.role.findUnique({
+    const role = await PrismaClient.role.findUnique({
       where: {
         id: Number(roleID),
         electionID,
@@ -32,7 +32,7 @@ export const actions = {
     }
 
     // Check if user is already a candidate in the role
-    let candidate = await Prisma.candidate.findFirst({
+    let candidate = await PrismaClient.candidate.findFirst({
       where: {
         roles: {
           some: {
@@ -51,7 +51,7 @@ export const actions = {
       return fail(400, { message: "You are already a candidate for this role" })
     }
 
-    candidate = await Prisma.candidate.findFirst({
+    candidate = await PrismaClient.candidate.findFirst({
       where: {
         electionID,
         users: {
@@ -63,7 +63,7 @@ export const actions = {
     })
 
     if (candidate) {
-      candidate = await Prisma.candidate.update({
+      candidate = await PrismaClient.candidate.update({
         where: {
           id: candidate.id,
         },
@@ -76,7 +76,7 @@ export const actions = {
         },
       })
     } else {
-      candidate = await Prisma.candidate.create({
+      candidate = await PrismaClient.candidate.create({
         data: {
           name: session.user.name,
           electionID: election.id,

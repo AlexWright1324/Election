@@ -1,4 +1,4 @@
-import { Prisma } from "$lib/server/db"
+import { PrismaClient } from "$lib/server/db"
 import { error } from "@sveltejs/kit"
 import type { LayoutServerLoad } from "./$types"
 
@@ -10,7 +10,7 @@ export const load: LayoutServerLoad = async ({ parent, params }) => {
   const electionID = Number(params.electionID)
   const candidateID = Number(params.candidateID)
 
-  const candidate = await Prisma.candidate.findUnique({
+  const candidate = await PrismaClient.candidate.findUnique({
     where: {
       id: candidateID,
       electionID: electionID,

@@ -1,12 +1,12 @@
 import type { PageServerLoad } from "./$types"
 
-import { Prisma } from "$lib/server/db"
+import { PrismaClient } from "$lib/server/db"
 import { isCandidateAdmin } from "$lib/server/election"
 import { storeCandidateCoverImage, zImage } from "$lib/server/store"
 
 import { message, superValidate } from "sveltekit-superforms"
 import { zod } from "sveltekit-superforms/adapters"
-import { fail } from "@sveltejs/kit"
+import { fail, redirect } from "@sveltejs/kit"
 import { z } from "zod"
 
 const editFormSchema = z.object({
@@ -26,11 +26,7 @@ const editFormSchema = z.object({
 })
 
 export const load: PageServerLoad = async ({ parent }) => {
-  const { candidate, candidateAdmin, election } = await parent()
-
-  if (!candidateAdmin) {
-    return fail(403, { message: "You are not authorized to edit this candidate" })
-  }
+  const { candidate, election } = await parent()
 
   const roles = election.roles.map((role) => {
     return {
@@ -72,7 +68,7 @@ export const actions = {
 
     const roles = form.data.roles.filter((role) => role.checked).map((role) => ({ id: role.id }))
 
-    await Prisma.candidate.update({
+    await PrismaClient.candidate.update({
       where: {
         id: candidateID,
       },
@@ -92,5 +88,37 @@ export const actions = {
     }
 
     return message(form, "Updated")
+  },
+  leave: async ({ locals, params }) => {
+    const session = await locals.auth()
+
+    if (!session?.user.uniID) {
+      return fail(403, { message: "You are not logged in" })
+    }
+
+    const electionID = Number(params.electionID)
+    const candidateID = Number(params.candidateID)
+
+    await PrismaClient.$transaction(async (tx) => {
+      await tx.candidate.update({
+        where: { id: candidateID },
+        data: {
+          users: {
+            disconnect: {
+              uniID: session.user.uniID,
+            },
+          },
+        },
+      })
+      await tx.candidate.deleteMany({
+        where: {
+          users: {
+            none: {}
+          }
+        }
+      })
+    })
+
+    return redirect(303, `/election/${electionID}`)
   },
 }

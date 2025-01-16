@@ -1,13 +1,21 @@
 <script lang="ts">
   import { Markdown } from "carta-md"
 
-  import Card from "$lib/components/Card.svelte"
   import { seperateJoin } from "$lib/client/separate"
   import { getCandidateCoverImage } from "$lib/client/store"
   import { carta } from "$lib/client/carta"
+  import { enhance } from "$app/forms"
 
-  let { data } = $props()
+  let { data, form } = $props()
 </script>
+
+{#if data.invited}
+  <p>You have been invited to join this candidancy as a member.</p>
+  <form action="?/acceptInvite" method="post" use:enhance>
+    <button class="btn preset-filled-primary-500" type="submit">Join</button>
+  </form>
+  <p>{form?.message}</p>
+{/if}
 
 <h1 class="h1">{data.candidate.name}</h1>
 

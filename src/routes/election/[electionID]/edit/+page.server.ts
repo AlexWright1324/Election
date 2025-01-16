@@ -1,7 +1,7 @@
 import type { PageServerLoad } from "./$types"
 import { redirect } from "@sveltejs/kit"
 
-import { Prisma } from "$lib/server/db"
+import { PrismaClient } from "$lib/server/db"
 import { deleteElection, isElectionAdmin } from "$lib/server/election"
 import { storeElectionCoverImage, zImage } from "$lib/server/store"
 
@@ -48,7 +48,7 @@ export const actions = {
       return fail(403, { message: "You are not an admin" })
     }
 
-    await Prisma.election.update({
+    await PrismaClient.election.update({
       where: {
         id: electionID,
       },

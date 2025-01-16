@@ -1,4 +1,4 @@
-import { Prisma } from "$lib/server/db"
+import { PrismaClient } from "$lib/server/db"
 import { isElectionAdmin } from "$lib/server/election"
 import { error } from "@sveltejs/kit"
 import type { LayoutServerLoad } from "./$types"
@@ -10,7 +10,7 @@ export const load: LayoutServerLoad = async ({ parent, params }) => {
 
   const electionAdmin = session?.user?.uniID ? await isElectionAdmin(id, session.user.uniID) : false
 
-  const election = await Prisma.election.findUnique({
+  const election = await PrismaClient.election.findUnique({
     where: {
       id,
       published: electionAdmin ? undefined : true,
@@ -43,7 +43,7 @@ export const load: LayoutServerLoad = async ({ parent, params }) => {
     error(404, "Election not found")
   }
 
-  const candidateInvites = await Prisma.candidateInvite.findMany({
+  const candidateInvites = await PrismaClient.candidateInvite.findMany({
     where: {
       candidate: {
         electionID: id,

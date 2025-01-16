@@ -6,7 +6,7 @@
 			"type": "bun",
 			"request": "launch",
 			"program": "run",
-			"args": ["dev"],
+			"args": ["dev", "--host"],
 			"cwd": "${workspaceFolder}"
 		}
 	]

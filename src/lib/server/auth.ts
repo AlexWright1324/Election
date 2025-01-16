@@ -1,6 +1,6 @@
 import { SvelteKitAuth } from "@auth/sveltekit"
 import Keycloak from "@auth/sveltekit/providers/keycloak"
-import { Prisma } from "$lib/server/db"
+import { PrismaClient } from "$lib/server/db"
 
 declare module "@auth/sveltekit" {
   interface Session {
@@ -55,7 +55,7 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
       }
 
       // Find or create user
-      const user = await Prisma.user.upsert({
+      const user = await PrismaClient.user.upsert({
         where: { uniID: profile.uni_id },
         update: {
           name: profile.name,

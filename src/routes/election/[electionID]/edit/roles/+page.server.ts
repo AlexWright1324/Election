@@ -1,6 +1,6 @@
 import type { PageServerLoad } from "./$types"
 
-import { Prisma } from "$lib/server/db"
+import { PrismaClient } from "$lib/server/db"
 import { isElectionAdmin } from "$lib/server/election"
 
 import { message, fail, superValidate } from "sveltekit-superforms"
@@ -37,7 +37,7 @@ export const actions = {
     const admin = await isElectionAdmin(electionID, session.user.uniID)
     if (!admin) return fail(403, { message: "You are not an admin" })
 
-    await Prisma.$transaction(async (tx) => {
+    await PrismaClient.$transaction(async (tx) => {
       // Get existing roles for comparison
       const existingRoles = await tx.role.findMany({
         where: { electionID },

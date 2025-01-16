@@ -1,10 +1,11 @@
 <script lang="ts">
   import { carta } from "$lib/client/carta"
   import { getCandidateCoverImage } from "$lib/client/store"
-
+  
   import { MarkdownEditor } from "carta-md"
   import { superForm } from "sveltekit-superforms"
-  import SuperDebug from "sveltekit-superforms"
+  
+  import CustomModal from "$lib/components/modals/Custom.svelte"
   import Unsaved from "$lib/components/modals/Unsaved.svelte"
 
   let { data } = $props()
@@ -28,8 +29,19 @@
 <Unsaved bind:this={unsavedModal} />
 
 <div class="flex flex-wrap gap-2">
-  <button form="update" type="submit" class="btn preset-filled-primary-500" disabled={!unsaved}>Update Candidate</button
-  >
+  <button form="update" type="submit" class="btn preset-filled-primary-500" disabled={!unsaved}>
+    Update Candidate
+  </button>
+  <CustomModal header="Leave Candidancy" text="Are you sure you want to leave this candidancy?" triggerBase="preset-filled-error-500">
+    {#snippet trigger()}
+      Leave
+    {/snippet}
+    {#snippet buttons()}
+      <form method="post" action="?/leave" use:enhance>
+        <button type="submit" class="btn preset-filled-error-500">Leave</button>
+      </form>
+    {/snippet}
+  </CustomModal>
 </div>
 
 <div class="flex flex-wrap gap-4">

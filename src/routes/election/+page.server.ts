@@ -1,17 +1,17 @@
-import { Prisma } from "$lib/server/db"
+import { PrismaClient } from "$lib/server/db"
 import { fail, redirect } from "@sveltejs/kit"
 import type { PageServerLoad } from "./$types"
 
 export const load: PageServerLoad = async ({ parent }) => {
   const { session } = await parent()
 
-  const elections = await Prisma.election.findMany({
+  const elections = await PrismaClient.election.findMany({
     where: {
       published: true,
     },
   })
   const managedElections = session?.user.uniID
-    ? await Prisma.election.findMany({
+    ? await PrismaClient.election.findMany({
         where: {
           admins: {
             some: {
@@ -36,7 +36,7 @@ export const actions = {
       return fail(403, { message: "You are not logged in" })
     }
 
-    const election = await Prisma.election.create({
+    const election = await PrismaClient.election.create({
       data: {
         admins: {
           connect: {
