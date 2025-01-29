@@ -8,7 +8,7 @@ export const load: LayoutServerLoad = async ({ parent, params }) => {
 
   const id = Number(params.electionID)
 
-  const electionAdmin = session?.user?.uniID ? await isElectionAdmin(id, session.user.uniID) : false
+  const electionAdmin = session?.user.userID ? await isElectionAdmin(id, session.user.userID) : false
 
   const election = await PrismaClient.election.findUnique({
     where: {
@@ -17,19 +17,15 @@ export const load: LayoutServerLoad = async ({ parent, params }) => {
     },
     include: {
       roles: {
-        select: {
-          id: true,
-          name: true,
+        include: {
           candidates: {
-            select: {
-              id: true,
-              name: true,
+            include: {
               users: {
                 select: {
                   name: true,
                 },
                 where: {
-                  uniID: session?.user?.uniID,
+                  userID: session?.user?.userID,
                 },
               },
             },
@@ -48,14 +44,10 @@ export const load: LayoutServerLoad = async ({ parent, params }) => {
       candidate: {
         electionID: id,
       },
-      uniID: session?.user?.uniID,
+      userID: session?.user?.userID,
     },
     include: {
-      candidate: {
-        select: {
-          name: true,
-        },
-      },
+      candidate: true,
     },
   })
 

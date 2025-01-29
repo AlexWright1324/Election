@@ -1,13 +1,10 @@
-<footer>
-	<h3>Made by Alex Wright</h3>
-</footer>
+<script lang="ts">
+  import { Github } from "lucide-svelte"
+</script>
 
-<style>
-	footer {
-		margin-top: auto;
-		padding: 0 1rem 0 1rem;
-	}
-	h3 {
-		text-align: center;
-	}
-</style>
+<footer class="flex flex-wrap justify-center p-2">
+  <a class="btn" href="https://uwcs.co.uk">UWCS</a>
+  <a class="gap-2 btn" href="https://github.com/AlexWright1324/CS310">
+    <Github size="24" />
+  </a>
+</footer>

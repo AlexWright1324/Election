@@ -2,6 +2,7 @@ import { join } from "node:path"
 import { rm, mkdir } from "node:fs/promises"
 import { PrismaClient } from "$lib/server/db"
 import { storePath } from "$lib/server/store"
+import type { Prisma } from "@prisma/client"
 
 export const isElectionAdmin = async (electionID: number, userID: string): Promise<boolean> => {
   const election = await PrismaClient.election.findUnique({
@@ -9,7 +10,7 @@ export const isElectionAdmin = async (electionID: number, userID: string): Promi
       id: electionID,
       admins: {
         some: {
-          uniID: userID,
+          userID: userID,
         },
       },
     },
@@ -23,7 +24,7 @@ export const isCandidateAdmin = async (candidateID: number, userID: string): Pro
       id: candidateID,
       users: {
         some: {
-          uniID: userID,
+          userID: userID,
         },
       },
     },

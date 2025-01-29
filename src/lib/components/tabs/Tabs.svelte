@@ -11,13 +11,7 @@
   {#if name}
     <span class="label-text">{name}</span>
   {/if}
-  <nav>
+  <nav class="btn-group preset-outlined-surface-200-800 mb-2">
     {@render children()}
   </nav>
 {/if}
-
-<style lang="postcss">
-  nav {
-    @apply btn-group preset-outlined-surface-800-200 mb-2;
-  }
-</style>

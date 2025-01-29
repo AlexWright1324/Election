@@ -1,15 +1,12 @@
+import { requireAuth } from "$lib/server/auth"
 import { PrismaClient } from "$lib/server/db"
 import { fail, redirect } from "@sveltejs/kit"
 
 export const actions = {
-  signup: async ({ locals, params, request }) => {
-    const session = await locals.auth()
+  signup: requireAuth(async ({ params, request, userID }) => {
     const formData = await request.formData()
     const roleID = formData.get("roleID")
 
-    if (!session?.user?.uniID) {
-      return fail(403, { message: "You are not logged in" })
-    }
     const electionID = Number(params.electionID)
 
     const election = await PrismaClient.election.findUnique({
@@ -41,7 +38,7 @@ export const actions = {
         },
         users: {
           some: {
-            uniID: session.user.uniID,
+            userID
           },
         },
       },
@@ -56,7 +53,7 @@ export const actions = {
         electionID,
         users: {
           some: {
-            uniID: session.user.uniID,
+            userID
           },
         },
       },
@@ -78,7 +75,6 @@ export const actions = {
     } else {
       candidate = await PrismaClient.candidate.create({
         data: {
-          name: session.user.name,
           electionID: election.id,
           roles: {
             connect: {
@@ -87,7 +83,7 @@ export const actions = {
           },
           users: {
             connect: {
-              uniID: session.user.uniID,
+              userID
             },
           },
         },
@@ -95,5 +91,5 @@ export const actions = {
     }
 
     return redirect(303, `/election/${electionID}/candidate/${candidate.id}`)
-  },
+  }),
 }

@@ -15,14 +15,8 @@
 	} = $props();
 </script>
 
-<Header uniID={data.session?.user?.uniID} />
-<main>
+<Header userID={data.session?.user?.userID} />
+<main class="max-w-screen-2xl w-full min-w-0 mx-auto p-4">
 	{@render children()}
 </main>
 <Footer />
-
-<style lang="postcss">
-	main {
-		@apply max-w-screen-2xl w-full min-w-0 mx-auto p-4 
-	}
-</style>

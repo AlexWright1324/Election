@@ -36,12 +36,7 @@
       href="/election/{data.election.id}/candidate/{candidate.id}"
       image={getCandidateCoverImage(data.election.id, candidate.id)}
     >
-      <h3>{candidate.name}</h3>
-      {#if candidate.users.length > 1}
-        {#snippet footer()}
-          {seperateJoin(candidate.users.map((u) => u.name))}
-        {/snippet}
-      {/if}
+      {seperateJoin(candidate.users.map((u) => u.name))}
     </Card>
   {:else}
     <p>No Candidates</p>
@@ -49,10 +44,3 @@
 {:else}
   <p>No Roles</p>
 {/each}
-
-{#if data.candidateInvites.length > 0}
-  <h2 class="h2">Invites</h2>
-  {#each data.candidateInvites as invite}
-    Invite to become a candidate for {invite.candidate.name}
-  {/each}
-{/if}

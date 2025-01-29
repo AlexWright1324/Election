@@ -2,22 +2,21 @@
   import { SignIn, SignOut } from "@auth/sveltekit/components"
 
   let {
-    uniID,
+    userID,
   }: {
-    uniID?: string
+    userID?: string
   } = $props()
 </script>
 
 <header>
   <div>
     <nav>
-      <a href="/">UWCS Elecom</a>
+      <a href="/">UWCS Elections</a>
       <a href="/election">Elections</a>
-      <a href="/competition">Competitions</a>
     </nav>
     <div>
-      {#if uniID}
-        u{uniID}
+      {#if userID}
+        u{userID}
         <SignOut className="btn preset-tonal-primary">
           <div slot="submitButton">Logout</div>
         </SignOut>

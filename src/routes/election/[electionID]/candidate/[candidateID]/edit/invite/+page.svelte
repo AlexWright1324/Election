@@ -11,14 +11,14 @@
   <label class="label">
     <div class="flex flex-wrap gap-2">
       <span class="label-text">University ID</span>
-      {#if $errors.uniID}
+      {#if $errors.userID}
         <span class="label-text text-error-500">
-          ⚠️ {$errors.uniID}
+          ⚠️ {$errors.userID}
         </span>
       {/if}
     </div>
 
-    <input class="input" type="text" name="uniID" placeholder="1234567" bind:value={$form.uniID} />
+    <input class="input" type="text" name="userID" placeholder="1234567" bind:value={$form.userID} />
     <span></span>
   </label>
   <button class="btn preset-filled-primary-500" type="submit">Invite</button>
@@ -42,7 +42,7 @@
     {#each data.currentInvites as invite}
       <tr>
         <td>{invite.user.name}</td>
-        <td>{invite.user.uniID}</td>
+        <td>{invite.user.userID}</td>
         <td class="text-right">
           <form action="?/uninvite" method="post" use:uninviteEnhance>
             <input type="hidden" name="id" bind:value={invite.id} />

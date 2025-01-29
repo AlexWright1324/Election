@@ -8,7 +8,7 @@ export const load: PageServerLoad = async ({ parent, params }) => {
 
   const invited = await PrismaClient.candidateInvite.exists({
     candidateID: Number(params.candidateID),
-    uniID: session?.user.uniID,
+    userID: session?.user.userID,
   })
 
   return {
@@ -20,7 +20,7 @@ export const actions = {
   acceptInvite: async ({ locals, params }) => {
     const session = await locals.auth()
 
-    if (!session?.user.uniID) {
+    if (!session?.user.userID) {
       return fail(403, { message: "You are not logged in" })
     }
 
@@ -29,7 +29,7 @@ export const actions = {
       const userIsCandidate = await tx.candidate.exists({
         users: {
           some: {
-            uniID: session.user.uniID,
+            userID: session.user.userID,
           },
         },
       })
@@ -40,9 +40,9 @@ export const actions = {
 
       await tx.candidateInvite.delete({
         where: {
-          candidateID_uniID: {
+          candidateID_userID: {
             candidateID,
-            uniID: session.user.uniID,
+            userID: session.user.userID,
           },
         },
       })
@@ -52,7 +52,7 @@ export const actions = {
         data: {
           users: {
             connect: {
-              uniID: session.user.uniID,
+              userID: session.user.userID,
             },
           },
         },

@@ -8,12 +8,10 @@
   }>()
 </script>
 
-<a {href} aria-current={page.url.pathname === href ? "page" : undefined}>{@render children?.()}</a>
+<a class="btn" {href} aria-current={page.url.pathname === href ? "page" : undefined}>{@render children?.()}</a>
 
-<style lang="postcss">
+<style>
   a {
-    @apply btn;
-
     &[aria-current="page"] {
       @apply preset-tonal-primary;
     }

@@ -9,7 +9,7 @@ import { z } from "zod"
 import { isCandidateAdmin } from "$lib/server/election"
 
 const inviteFormSchema = z.object({
-  uniID: z.string().nonempty("University ID is required"),
+  userID: z.string().nonempty("University ID is required"),
 })
 
 const uninviteFormSchema = z.object({
@@ -27,7 +27,7 @@ export const load: PageServerLoad = async ({ parent }) => {
       id: true,
       user: {
         select: {
-          uniID: true,
+          userID: true,
           name: true,
         },
       },
@@ -46,14 +46,14 @@ export const actions = {
     const session = await locals.auth()
     const form = await superValidate(request, zod(inviteFormSchema))
 
-    if (!session?.user?.uniID || !form.valid) {
+    if (!session?.user?.userID || !form.valid) {
       return fail(400, { form })
     }
 
     const electionID = Number(params.electionID)
     const candidateID = Number(params.candidateID)
 
-    const admin = await isCandidateAdmin(candidateID, session.user.uniID)
+    const admin = await isCandidateAdmin(candidateID, session.user.userID)
 
     if (!admin) {
       return fail(403, { message: "You are not an admin" })
@@ -62,25 +62,25 @@ export const actions = {
     return await PrismaClient.$transaction(async (tx) => {
       const user = await tx.user.findUnique({
         where: {
-          uniID: form.data.uniID,
+          userID: form.data.userID,
         },
       })
 
       if (!user) {
-        return setError(form, "uniID", "User does not exist")
+        return setError(form, "userID", "User does not exist")
       }
 
       const userIsMember = await tx.candidate.exists({
         id: candidateID,
         users: {
           some: {
-            uniID: form.data.uniID,
+            userID: form.data.userID,
           },
         },
       })
 
       if (userIsMember) {
-        return setError(form, "uniID", "User is already a member")
+        return setError(form, "userID", "User is already a member")
       }
 
       await tx.candidateInvite.create({
@@ -92,7 +92,7 @@ export const actions = {
           },
           user: {
             connect: {
-              uniID: form.data.uniID,
+              userID: form.data.userID,
             },
           },
         },
@@ -103,14 +103,14 @@ export const actions = {
     const session = await locals.auth()
     const form = await superValidate(request, zod(uninviteFormSchema))
 
-    if (!session?.user?.uniID || !form.valid) {
+    if (!session?.user?.userID || !form.valid) {
       return fail(400, { form })
     }
 
     const electionID = Number(params.electionID)
     const candidateID = Number(params.candidateID)
 
-    const admin = await isCandidateAdmin(candidateID, session.user.uniID)
+    const admin = await isCandidateAdmin(candidateID, session.user.userID)
 
     if (!admin) {
       return fail(403, { message: "You are not an admin" })

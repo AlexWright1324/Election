@@ -10,7 +10,6 @@ import { fail, redirect } from "@sveltejs/kit"
 import { z } from "zod"
 
 const editFormSchema = z.object({
-  name: z.string(),
   description: z.string(),
   image: zImage,
   roles: z
@@ -37,7 +36,6 @@ export const load: PageServerLoad = async ({ parent }) => {
   })
 
   const formData = {
-    name: candidate.name,
     description: candidate.description,
     image: null,
     roles,
@@ -53,14 +51,14 @@ export const actions = {
     const session = await locals.auth()
     const form = await superValidate(request, zod(editFormSchema))
 
-    if (!session?.user?.uniID || !form.valid) {
+    if (!session?.user?.userID || !form.valid) {
       return fail(400, { form })
     }
 
     const electionID = Number(params.electionID)
     const candidateID = Number(params.candidateID)
 
-    const admin = await isCandidateAdmin(candidateID, session.user.uniID)
+    const admin = await isCandidateAdmin(candidateID, session.user.userID)
 
     if (!admin) {
       return fail(403, { message: "You are not an admin" })
@@ -73,7 +71,6 @@ export const actions = {
         id: candidateID,
       },
       data: {
-        name: form.data.name,
         description: form.data.description,
         roles: {
           set: roles,
@@ -92,7 +89,7 @@ export const actions = {
   leave: async ({ locals, params }) => {
     const session = await locals.auth()
 
-    if (!session?.user.uniID) {
+    if (!session?.user.userID) {
       return fail(403, { message: "You are not logged in" })
     }
 
@@ -105,7 +102,7 @@ export const actions = {
         data: {
           users: {
             disconnect: {
-              uniID: session.user.uniID,
+              userID: session.user.userID,
             },
           },
         },

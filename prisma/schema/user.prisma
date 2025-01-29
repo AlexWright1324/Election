@@ -1,10 +1,11 @@
 model User {
-    uniID String @id
-    name  String
+    userID String @id
+    name   String
 
-    electionAdmins Election[]
-    candidates     Candidate[]
+    electionAdmins   Election[]
+    candidates       Candidate[]
     candidateInvites CandidateInvite[]
-    voters         Voter[]
-    competitions   Competition[]
+    voters           Voter[]
+    motionSeconders  Motion[]          @relation("MotionSeconders")
+    motionProposers  Motion[]          @relation("MotionProposers")
 }

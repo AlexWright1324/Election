@@ -1,30 +1,47 @@
 model Election {
-  id             Int       @id @default(autoincrement())
-  name           String    @default("New Election")
-  description    String    @default("Sample Description")
+  id          Int     @id @default(autoincrement())
+  name        String  @default("New Election")
+  description String  @default("Sample Description")
+  published   Boolean @default(false)
+
+  // Timing
   start          DateTime?
   end            DateTime?
   candidateStart DateTime?
   candidateEnd   DateTime?
-  published      Boolean   @default(false)
+
+  // Candidate Settings
+  candidateDefaultDescription String @default("")
+  candidateMaxDescription     Int    @default(1000)
+  candidateMaxUsers           Int    @default(1)
+
+  // Motion Settings
+  motionEnabled            Boolean @default(true)
+  motionDefaultDescription String  @default("# The Society notes:\n# The Society believes:\n# The Society resolves to:\n")
+  motionMaxDescription     Int     @default(1000)
+  motionMaxSeconders       Int     @default(1)
+
+  // Results Settings
+  resultsPublished Boolean @default(false)
 
   admins     User[]
   roles      Role[]
   voters     Voter[]
   ballots    Ballot[]
   candidates Candidate[]
+  motions    Motion[]
 }
 
 model Voter {
-  user     User     @relation(fields: [uniID], references: [uniID], onDelete: Cascade)
+  user     User     @relation(fields: [userID], references: [userID], onDelete: Cascade)
   election Election @relation(fields: [electionID], references: [id], onDelete: Cascade)
   voted    Boolean  @default(false)
 
-  uniID      String
+  userID     String
   electionID Int
-  // Cannot link with Ballot/Vote due to traceability
 
-  @@unique([uniID, electionID])
+  // Cannot link with Ballot/Vote due to traceability
+  @@unique([userID, electionID])
 }
 
 model Ballot {
@@ -64,7 +81,6 @@ model Role {
 
 model Candidate {
   id          Int      @id @default(autoincrement())
-  name        String
   description String   @default("")
   election    Election @relation(fields: [electionID], references: [id], onDelete: Cascade)
 
@@ -79,11 +95,23 @@ model Candidate {
 model CandidateInvite {
   id        Int       @id @default(autoincrement())
   candidate Candidate @relation(fields: [candidateID], references: [id], onDelete: Cascade)
-  user      User      @relation(fields: [uniID], references: [uniID], onDelete: Cascade)
+  user      User      @relation(fields: [userID], references: [userID], onDelete: Cascade)
 
   candidateID Int
-  uniID       String
+  userID      String
 
   // Only one invite per candidate per user
-  @@unique([candidateID, uniID])
+  @@unique([candidateID, userID])
+}
+
+model Motion {
+  id          Int      @id @default(autoincrement())
+  name        String   @default("New Motion")
+  description String
+  election    Election @relation(fields: [electionID], references: [id], onDelete: Cascade)
+  proposer    User     @relation("MotionProposers", fields: [proposerID], references: [userID], onDelete: Cascade)
+  seconders   User[]   @relation("MotionSeconders")
+
+  electionID Int
+  proposerID String
 }

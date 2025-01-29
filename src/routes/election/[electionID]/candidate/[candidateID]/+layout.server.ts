@@ -25,7 +25,7 @@ export const load: LayoutServerLoad = async ({ parent, params }) => {
     error(404, "Candidate not found")
   }
 
-  const candidateAdmin = candidate.users.some(user => user.uniID === session?.user.uniID)
+  const candidateAdmin = candidate.users.some(user => user.userID === session?.user.userID)
 
   return {
     candidate,

@@ -6,7 +6,7 @@ import { PrismaClient } from "$lib/server/db"
 export const load: LayoutServerLoad = async ({ parent, params }) => {
 	const { session } = await parent()
 
-	if (!session?.user?.uniID) {
+	if (!session?.user?.userID) {
 		error(403, "You are not logged in")
 	}
 
@@ -17,7 +17,7 @@ export const load: LayoutServerLoad = async ({ parent, params }) => {
 			id: electionID,
 			admins: {
 				some: {
-					uniID: session.user.uniID,
+					userID: session.user.userID,
 				},
 			},
 		},

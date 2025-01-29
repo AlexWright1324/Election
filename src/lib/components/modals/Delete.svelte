@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { enhance } from "$app/forms"
   import CustomModal from "./Custom.svelte"
 
   let {
@@ -13,7 +14,7 @@
     Delete {name}
   {/snippet}
   {#snippet buttons()}
-    <form method="post" action="?/delete">
+    <form method="post" action="?/delete" use:enhance>
       <button type="submit" class="btn preset-filled-error-400-600">Delete {name}</button>
     </form>
   {/snippet}

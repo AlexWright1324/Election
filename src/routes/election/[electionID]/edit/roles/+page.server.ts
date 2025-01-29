@@ -6,6 +6,7 @@ import { isElectionAdmin } from "$lib/server/election"
 import { message, fail, superValidate } from "sveltekit-superforms"
 import { zod } from "sveltekit-superforms/adapters"
 import { z } from "zod"
+import { requireElectionAdmin } from "$lib/server/auth"
 
 const editRolesSchema = z.object({
   roles: z.array(
@@ -26,16 +27,9 @@ export const load: PageServerLoad = async ({ parent }) => {
 }
 
 export const actions = {
-  editRoles: async ({ request, locals, params }) => {
-    const session = await locals.auth()
+  editRoles: requireElectionAdmin(async ({ request, electionID }) => {
     const form = await superValidate(request, zod(editRolesSchema))
-
-    if (!session?.user.uniID || !form.valid) return fail(400, { form })
-
-    const electionID = Number(params.electionID)
-
-    const admin = await isElectionAdmin(electionID, session.user.uniID)
-    if (!admin) return fail(403, { message: "You are not an admin" })
+    if (!form.valid) return fail(400, { form })
 
     await PrismaClient.$transaction(async (tx) => {
       // Get existing roles for comparison
@@ -77,5 +71,5 @@ export const actions = {
     })
 
     return message(form, "Updated")
-  },
+  }),
 }

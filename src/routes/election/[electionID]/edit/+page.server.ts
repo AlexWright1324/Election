@@ -2,12 +2,13 @@ import type { PageServerLoad } from "./$types"
 import { redirect } from "@sveltejs/kit"
 
 import { PrismaClient } from "$lib/server/db"
-import { deleteElection, isElectionAdmin } from "$lib/server/election"
+import { deleteElection } from "$lib/server/election"
 import { storeElectionCoverImage, zImage } from "$lib/server/store"
 
 import { message, superValidate, fail } from "sveltekit-superforms"
 import { zod } from "sveltekit-superforms/adapters"
 import { z } from "zod"
+import { requireElectionAdmin } from "$lib/server/auth"
 
 const updateSchema = z.object({
   name: z.string(),
@@ -17,7 +18,14 @@ const updateSchema = z.object({
   candidateStart: z.date().nullable(),
   candidateEnd: z.date().nullable(),
   published: z.boolean(),
-  image: zImage
+  image: zImage,
+  candidateDefaultDescription: z.string(),
+  candidateMaxDescription: z.number(),
+  candidateMaxUsers: z.number(),
+  motionEnabled: z.boolean(),
+  motionDefaultDescription: z.string(),
+  motionMaxDescription: z.number(),
+  motionMaxSeconders: z.number(),
 })
 
 export const load: PageServerLoad = async ({ parent }) => {
@@ -33,19 +41,11 @@ export const load: PageServerLoad = async ({ parent }) => {
 }
 
 export const actions = {
-  update: async ({ request, locals, params }) => {
-    const session = await locals.auth()
+  update: requireElectionAdmin(async ({ request, electionID }) => {
     const form = await superValidate(request, zod(updateSchema))
 
-    if (!session?.user?.uniID || !form.valid) {
+    if (!form.valid) {
       return fail(400, { form })
-    }
-
-    const electionID = Number(params.electionID)
-
-    const admin = await isElectionAdmin(electionID, session.user.uniID)
-    if (!admin) {
-      return fail(403, { message: "You are not an admin" })
     }
 
     await PrismaClient.election.update({
@@ -60,6 +60,13 @@ export const actions = {
         candidateStart: form.data.candidateStart,
         candidateEnd: form.data.candidateEnd,
         published: form.data.published,
+        candidateDefaultDescription: form.data.candidateDefaultDescription,
+        candidateMaxDescription: form.data.candidateMaxDescription,
+        candidateMaxUsers: form.data.candidateMaxUsers,
+        motionDefaultDescription: form.data.motionDefaultDescription,
+        motionEnabled: form.data.motionEnabled,
+        motionMaxDescription: form.data.motionMaxDescription,
+        motionMaxSeconders: form.data.motionMaxSeconders,
       },
     })
 
@@ -70,22 +77,10 @@ export const actions = {
     }
 
     return message(form, "Updated")
-  },
-  delete: async ({ locals, params }) => {
-    const session = await locals.auth()
-
-    if (!session?.user?.uniID) {
-      return fail(401, { message: "You are not logged in" })
-    }
-
-    const electionID = Number(params.electionID)
-
-    if (!(await isElectionAdmin(electionID, session.user.uniID))) {
-      return fail(403, { message: "You are not an admin" })
-    }
-
+  }),
+  delete: requireElectionAdmin(async ({ electionID }) => {
     deleteElection(electionID)
 
     return redirect(303, "/election")
-  },
+  }),
 }
