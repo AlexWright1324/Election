@@ -29,15 +29,21 @@ html.dark .shiki span {
 
     .carta-toolbar-left {
       @apply gap-2;
+
       button {
         @apply btn;
 
         &.carta-active {
-          @apply preset-filled-surface-900-100;
+          @apply preset-filled;
+          &:hover {
+            background-color: unset;
+            filter: unset;
+            color: unset;
+          }
         }
 
         &:hover {
-          @apply preset-filled-surface-800-200;
+          @apply preset-filled;
         }
       }
     }

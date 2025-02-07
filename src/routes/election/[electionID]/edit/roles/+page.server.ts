@@ -1,7 +1,4 @@
-import type { PageServerLoad } from "./$types"
-
 import { PrismaClient } from "$lib/server/db"
-import { isElectionAdmin } from "$lib/server/election"
 
 import { message, fail, superValidate } from "sveltekit-superforms"
 import { zod } from "sveltekit-superforms/adapters"
@@ -18,7 +15,7 @@ const editRolesSchema = z.object({
   ),
 })
 
-export const load: PageServerLoad = async ({ parent }) => {
+export const load = async ({ parent }) => {
   const { election } = await parent()
 
   return {
@@ -27,14 +24,14 @@ export const load: PageServerLoad = async ({ parent }) => {
 }
 
 export const actions = {
-  editRoles: requireElectionAdmin(async ({ request, electionID }) => {
+  editRoles: requireElectionAdmin({ id: true }, async ({ request, election }) => {
     const form = await superValidate(request, zod(editRolesSchema))
     if (!form.valid) return fail(400, { form })
 
     await PrismaClient.$transaction(async (tx) => {
       // Get existing roles for comparison
       const existingRoles = await tx.role.findMany({
-        where: { electionID },
+        where: { id: election.id },
       })
 
       const existingIds = new Set(existingRoles.map((r) => r.id))
@@ -63,7 +60,9 @@ export const actions = {
             data: {
               name: role.name,
               seatsToFill: role.seatsToFill,
-              electionID,
+              election: {
+                connect: { id: election.id },
+              },
             },
           })
         }

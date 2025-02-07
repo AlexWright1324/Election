@@ -14,6 +14,7 @@ export const actions = {
         id: electionID,
       },
     })
+    
     if (!election) {
       return fail(404, { message: "Election not found" })
     }
@@ -24,6 +25,7 @@ export const actions = {
         electionID,
       },
     })
+    
     if (!role) {
       return fail(404, { message: "Role not found" })
     }
@@ -76,6 +78,7 @@ export const actions = {
       candidate = await PrismaClient.candidate.create({
         data: {
           electionID: election.id,
+          description: election.candidateDefaultDescription,
           roles: {
             connect: {
               id: role.id,

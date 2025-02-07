@@ -10,6 +10,14 @@ export const load: PageServerLoad = async ({ parent }) => {
     where: {
       published: true,
     },
+    select: {
+      id: true,
+      name: true,
+      start: true,
+      end: true,
+      candidateStart: true,
+      candidateEnd: true,
+    }
   })
   
   const managedElections = session?.user.userID
@@ -23,7 +31,7 @@ export const load: PageServerLoad = async ({ parent }) => {
         },
       })
     : []
-
+      
   return {
     elections,
     managedElections,

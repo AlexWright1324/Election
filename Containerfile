@@ -38,4 +38,4 @@ USER bun
 VOLUME /app/store
 EXPOSE 3000/tcp
 ENV DATABASE_URL=file:/app/store/db.sqlite
-CMD [ "sh", "-c", "bunx prisma migrate deploy && bun --bun ./build"]
+CMD [ "sh", "-c", "bunx prisma migrate deploy && echo 'Running Build...' && bun --bun ./build"]

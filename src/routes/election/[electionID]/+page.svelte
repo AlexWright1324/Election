@@ -5,6 +5,7 @@
   import { getCandidateCoverImage, getElectionCoverImage } from "$lib/client/store"
   import { seperateJoin } from "$lib/client/separate"
   import { carta } from "$lib/client/carta"
+  import { enhance } from "$app/forms"
 
   let { data } = $props()
 </script>
@@ -26,7 +27,7 @@
   {#if role.candidates.some((c) => c.users.some((u) => u))}
     <p>You are already a candidate for this role</p>
   {:else}
-    <form action="/election/{data.election.id}/candidate?/signup" method="POST">
+    <form action="/election/{data.election.id}/candidate?/signup" method="post" use:enhance>
       <input type="hidden" name="roleID" value={role.id} />
       <button class="btn preset-tonal-primary">Become a Candidate</button>
     </form>
@@ -44,3 +45,23 @@
 {:else}
   <p>No Roles</p>
 {/each}
+
+<hr class="hr" />
+
+{#if data.election.motionEnabled}
+  <h2 class="h2">Motions</h2>
+  <form action="/election/{data.election.id}/motion?/create" method="post" use:enhance>
+    <button class="btn preset-tonal-primary">Create a Motion</button>
+  </form>
+  <ul>
+    {#each data.election.motions as motion}
+      <li>
+        <a href="/election/{data.election.id}/motion/{motion.id}">
+          {motion.name}
+        </a>
+      </li>
+    {:else}
+      <p>No Motions</p>
+    {/each}
+  </ul>
+{/if}

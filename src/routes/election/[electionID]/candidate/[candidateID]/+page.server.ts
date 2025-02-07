@@ -1,14 +1,18 @@
-import type { PageServerLoad } from "./$types"
-import { fail } from "@sveltejs/kit"
-
+import { requireAuth } from "$lib/server/auth"
 import { PrismaClient } from "$lib/server/db"
 
-export const load: PageServerLoad = async ({ parent, params }) => {
+import { fail } from "@sveltejs/kit"
+
+export const load = async ({ parent, params }) => {
   const { session } = await parent()
 
-  const invited = await PrismaClient.candidateInvite.exists({
-    candidateID: Number(params.candidateID),
-    userID: session?.user.userID,
+  const invited = await PrismaClient.candidate.exists({
+    id: Number(params.candidateID),
+    userInvites: {
+      some: {
+        userID: session?.user.userID,
+      },
+    },
   })
 
   return {
@@ -17,48 +21,27 @@ export const load: PageServerLoad = async ({ parent, params }) => {
 }
 
 export const actions = {
-  acceptInvite: async ({ locals, params }) => {
-    const session = await locals.auth()
-
-    if (!session?.user.userID) {
-      return fail(403, { message: "You are not logged in" })
-    }
-
+  acceptInvite: requireAuth(async ({ params, userID }) => {
     const candidateID = Number(params.candidateID)
-    await PrismaClient.$transaction(async (tx) => {
-      const userIsCandidate = await tx.candidate.exists({
-        users: {
+
+    // TODO: check if there is overlap in roles or max candidancy
+
+    await PrismaClient.candidate.update({
+      where: {
+        id: candidateID,
+        userInvites: {
           some: {
-            userID: session.user.userID,
+            userID,
           },
         },
-      })
-
-      if (userIsCandidate) {
-        return fail(400, { message: "User is already a candidate" })
-      }
-
-      await tx.candidateInvite.delete({
-        where: {
-          candidateID_userID: {
-            candidateID,
-            userID: session.user.userID,
+      },
+      data: {
+        users: {
+          connect: {
+            userID,
           },
         },
-      })
-
-      await tx.candidate.update({
-        where: { id: candidateID },
-        data: {
-          users: {
-            connect: {
-              userID: session.user.userID,
-            },
-          },
-        },
-      })
+      },
     })
-
-    return { message: "You have been added as a candidate" }
-  },
+  }),
 }

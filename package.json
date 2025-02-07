@@ -4,10 +4,7 @@
 	"private": true,
 	"scripts": {
 		"dev": "bun --bun node_modules/.bin/svelte-kit sync && bun --bun node_modules/.bin/vite dev",
-		"build": "bun --bun node_modules/.bin/svelte-kit sync && bun --bun node_modules/.bin/vite build",
-		"preview": "bun --bun node_modules/.bin/svelte-kit sync && bun --bun node_modules/.bin/vite preview",
-		"check": "bun --bun node_modules/.bin/svelte-kit sync && bun --bun node_modules/.bin/svelte-check --tsconfig ./tsconfig.json",
-		"check:watch": "bun --bun node_modules/.bin/svelte-kit sync && bun --bun node_modules/.bin/svelte-check --tsconfig ./tsconfig.json --watch"
+		"build": "bun --bun node_modules/.bin/svelte-kit sync && bun --bun node_modules/.bin/vite build"
 	},
 	"devDependencies": {
 		"@auth/prisma-adapter": "^2.7.4",
@@ -16,17 +13,18 @@
 		"@sveltejs/adapter-auto": "^4.0.0",
 		"@sveltejs/kit": "^2.16.1",
 		"@tailwindcss/forms": "^0.5.10",
+		"@tailwindcss/postcss": "^4.0.3",
 		"@tailwindcss/typography": "^0.5.16",
-		"@tailwindcss/vite": "^4.0.0",
-		"@tailwindcss/postcss": "^4.0.0",
-		"@types/bun": "^1.2.1",
-		"@types/node": "^22.12.0",
+		"@tailwindcss/vite": "^4.0.3",
+		"@trivago/prettier-plugin-sort-imports": "^5.2.2",
+		"@types/bun": "^1.2.2",
+		"@types/node": "^22.13.0",
 		"autoprefixer": "^10.4.20",
 		"eslint-plugin-svelte": "^2.46.1",
 		"globals": "^15.14.0",
 		"prisma": "^6.0.1",
 		"sharp": "^0.33.5",
-		"svelte": "^5.19.4",
+		"svelte": "^5.19.6",
 		"svelte-adapter-bun": "^0.5.2",
 		"svelte-check": "^4.1.4",
 		"sveltekit-superforms": "^2.23.1",
@@ -56,6 +54,14 @@
 		"semi": false,
 		"singleQuote": false,
 		"tabWidth": 2,
-		"printWidth": 120
+		"printWidth": 120,
+		"importOrderSeparation": true,
+		"importOrder": [
+			"^\\$lib/",
+			"<THIRD_PARTY_MODULES>"
+		],
+		"plugins": [
+			"@trivago/prettier-plugin-sort-imports"
+		]
 	}
 }

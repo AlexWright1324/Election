@@ -1,12 +1,10 @@
-import type { PageServerLoad } from "./$types"
-
+import { requireCandidateAdmin } from "$lib/server/auth"
 import { PrismaClient } from "$lib/server/db"
-import { isCandidateAdmin } from "$lib/server/election"
 import { storeCandidateCoverImage, zImage } from "$lib/server/store"
 
+import { fail, redirect } from "@sveltejs/kit"
 import { message, superValidate } from "sveltekit-superforms"
 import { zod } from "sveltekit-superforms/adapters"
-import { fail, redirect } from "@sveltejs/kit"
 import { z } from "zod"
 
 const editFormSchema = z.object({
@@ -24,7 +22,7 @@ const editFormSchema = z.object({
     }),
 })
 
-export const load: PageServerLoad = async ({ parent }) => {
+export const load = async ({ parent }) => {
   const { candidate, election } = await parent()
 
   const roles = election.roles.map((role) => {
@@ -37,7 +35,7 @@ export const load: PageServerLoad = async ({ parent }) => {
 
   const formData = {
     description: candidate.description,
-    image: null,
+    image: undefined,
     roles,
   }
 
@@ -47,28 +45,18 @@ export const load: PageServerLoad = async ({ parent }) => {
 }
 
 export const actions = {
-  update: async ({ locals, params, request }) => {
-    const session = await locals.auth()
+  update: requireCandidateAdmin({ id: true, election: { select: { id: true } } }, async ({ request, candidate }) => {
     const form = await superValidate(request, zod(editFormSchema))
 
-    if (!session?.user?.userID || !form.valid) {
+    if (!form.valid) {
       return fail(400, { form })
-    }
-
-    const electionID = Number(params.electionID)
-    const candidateID = Number(params.candidateID)
-
-    const admin = await isCandidateAdmin(candidateID, session.user.userID)
-
-    if (!admin) {
-      return fail(403, { message: "You are not an admin" })
     }
 
     const roles = form.data.roles.filter((role) => role.checked).map((role) => ({ id: role.id }))
 
     await PrismaClient.candidate.update({
       where: {
-        id: candidateID,
+        id: candidate.id,
       },
       data: {
         description: form.data.description,
@@ -79,30 +67,21 @@ export const actions = {
     })
 
     if (form.data.image) {
-      await storeCandidateCoverImage(electionID, candidateID, form.data.image).catch(() => {
+      await storeCandidateCoverImage(candidate.election.id, candidate.id, form.data.image).catch(() => {
         return fail(500, { message: "Failed to upload image" })
       })
     }
 
     return message(form, "Updated")
-  },
-  leave: async ({ locals, params }) => {
-    const session = await locals.auth()
-
-    if (!session?.user.userID) {
-      return fail(403, { message: "You are not logged in" })
-    }
-
-    const electionID = Number(params.electionID)
-    const candidateID = Number(params.candidateID)
-
+  }),
+  leave: requireCandidateAdmin({ id: true, election: { select: { id: true } } }, async ({ userID, candidate }) => {
     await PrismaClient.$transaction(async (tx) => {
       await tx.candidate.update({
-        where: { id: candidateID },
+        where: { id: candidate.id },
         data: {
           users: {
             disconnect: {
-              userID: session.user.userID,
+              userID: userID,
             },
           },
         },
@@ -110,12 +89,12 @@ export const actions = {
       await tx.candidate.deleteMany({
         where: {
           users: {
-            none: {}
-          }
-        }
+            none: {},
+          },
+        },
       })
     })
 
-    return redirect(303, `/election/${electionID}`)
-  },
+    return redirect(303, `/election/${candidate.election.id}`)
+  }),
 }

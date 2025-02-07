@@ -1,4 +1,3 @@
-import type { PageServerLoad } from "./$types"
 import { redirect } from "@sveltejs/kit"
 
 import { PrismaClient } from "$lib/server/db"
@@ -28,12 +27,8 @@ const updateSchema = z.object({
   motionMaxSeconders: z.number(),
 })
 
-export const load: PageServerLoad = async ({ parent }) => {
-  const { election, electionAdmin } = await parent()
-
-  if (!electionAdmin) {
-    return fail(403, { message: "You are not authorized to edit this election" })
-  }
+export const load = async ({ parent }) => {
+  const { election } = await parent()
 
   return {
     updateForm: await superValidate(election, zod(updateSchema)),
@@ -41,7 +36,7 @@ export const load: PageServerLoad = async ({ parent }) => {
 }
 
 export const actions = {
-  update: requireElectionAdmin(async ({ request, electionID }) => {
+  update: requireElectionAdmin({ id: true }, async ({ request, election }) => {
     const form = await superValidate(request, zod(updateSchema))
 
     if (!form.valid) {
@@ -50,7 +45,7 @@ export const actions = {
 
     await PrismaClient.election.update({
       where: {
-        id: electionID,
+        id: election.id,
       },
       data: {
         name: form.data.name,
@@ -71,15 +66,15 @@ export const actions = {
     })
 
     if (form.data.image) {
-      await storeElectionCoverImage(electionID, form.data.image).catch(() => {
+      await storeElectionCoverImage(election.id, form.data.image).catch(() => {
         return fail(500, { message: "Failed to upload image" })
       })
     }
 
     return message(form, "Updated")
   }),
-  delete: requireElectionAdmin(async ({ electionID }) => {
-    deleteElection(electionID)
+  delete: requireElectionAdmin({ id: true }, async ({ election }) => {
+    deleteElection(election.id)
 
     return redirect(303, "/election")
   }),

@@ -14,10 +14,7 @@
   <form action="?/acceptInvite" method="post" use:enhance>
     <button class="btn preset-filled-primary-500" type="submit">Join</button>
   </form>
-  <p>{form?.message}</p>
 {/if}
-
-<h1 class="h1">{data.candidate.name}</h1>
 
 <article class="flex flex-wrap gap-x-4">
   <aside class="max-w-xs mb-2">

@@ -1,34 +1,26 @@
+import { requireCandidate } from "$lib/server/auth"
 import { PrismaClient } from "$lib/server/db"
 import { error } from "@sveltejs/kit"
-import type { LayoutServerLoad } from "./$types"
 
-export const load: LayoutServerLoad = async ({ parent, params }) => {
-  const { session } = await parent()
-  
-  // TODO: Election valid
-
-  const electionID = Number(params.electionID)
-  const candidateID = Number(params.candidateID)
-
-  const candidate = await PrismaClient.candidate.findUnique({
-    where: {
-      id: candidateID,
-      electionID: electionID,
+export const load = requireCandidate(
+  {
+    id: true,
+    description: true,
+    roles: {
+      select: {
+        name: true,
+      },
     },
-    include: {
-      roles: true,
-      users: true,
+    users: {
+      select: {
+        userID: true,
+        name: true,
+      },
+    },
+  },
+  async ({ candidate }) => {
+    return {
+      candidate,
     }
-  })
-
-  if (!candidate) {
-    error(404, "Candidate not found")
   }
-
-  const candidateAdmin = candidate.users.some(user => user.userID === session?.user.userID)
-
-  return {
-    candidate,
-    candidateAdmin
-  }
-}
+)

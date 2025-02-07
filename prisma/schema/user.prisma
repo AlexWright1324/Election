@@ -2,10 +2,11 @@ model User {
     userID String @id
     name   String
 
-    electionAdmins   Election[]
-    candidates       Candidate[]
-    candidateInvites CandidateInvite[]
-    voters           Voter[]
-    motionSeconders  Motion[]          @relation("MotionSeconders")
-    motionProposers  Motion[]          @relation("MotionProposers")
+    electionAdmins         Election[]
+    candidates             Candidate[]
+    candidateUserInvites   Candidate[]       @relation("CandidateUserInvites")
+    motionSeconders        Motion[]          @relation("MotionSeconders")
+    motionProposers        Motion[]          @relation("MotionProposers")
+    motionSeconderRequests Motion[]          @relation("MotionSeconderRequests")
+    voters                 Voter[]
 }

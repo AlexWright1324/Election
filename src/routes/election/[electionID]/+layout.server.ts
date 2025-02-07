@@ -1,59 +1,45 @@
-import { PrismaClient } from "$lib/server/db"
+import { requireElection } from "$lib/server/auth"
 import { isElectionAdmin } from "$lib/server/election"
-import { error } from "@sveltejs/kit"
-import type { LayoutServerLoad } from "./$types"
 
-export const load: LayoutServerLoad = async ({ parent, params }) => {
-  const { session } = await parent()
-
-  const id = Number(params.electionID)
-
-  const electionAdmin = session?.user.userID ? await isElectionAdmin(id, session.user.userID) : false
-
-  const election = await PrismaClient.election.findUnique({
-    where: {
-      id,
-      published: electionAdmin ? undefined : true,
+export const load = requireElection(
+  {
+    id: true,
+    name: true,
+    description: true,
+    motionEnabled: true,
+    motions: {
+      select: {
+        id: true,
+        name: true,
+      },
     },
-    include: {
-      roles: {
-        include: {
-          candidates: {
-            include: {
-              users: {
-                select: {
-                  name: true,
-                },
-                where: {
-                  userID: session?.user?.userID,
-                },
+    admins: {
+      select: {
+        userID: true,
+        name: true,
+      },
+    },
+    roles: {
+      select: {
+        id: true,
+        name: true,
+        candidates: {
+          select: {
+            id: true,
+            users: {
+              select: {
+                userID: true,
+                name: true,
               },
             },
           },
         },
       },
     },
-  })
-
-  if (!election) {
-    error(404, "Election not found")
+  },
+  async ({ election }) => {
+    return {
+      election,
+    }
   }
-
-  const candidateInvites = await PrismaClient.candidateInvite.findMany({
-    where: {
-      candidate: {
-        electionID: id,
-      },
-      userID: session?.user?.userID,
-    },
-    include: {
-      candidate: true,
-    },
-  })
-
-  return {
-    election,
-    electionAdmin,
-    candidateInvites,
-  }
-}
+)

@@ -6,7 +6,7 @@
   let { data, children } = $props()
 </script>
 
-{#if data.electionAdmin}
+{#if data.election.admins.some(admin => admin.userID === data.session?.user.userID)}
   {@const url = `/election/${data.election.id}`}
   <Tabs name="Election Admin">
     <TabItem href={url}>Preview</TabItem>

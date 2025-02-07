@@ -4,7 +4,7 @@
 
   import { MarkdownEditor } from "carta-md"
   import { superForm } from "sveltekit-superforms"
-  import UnsavedModal from "$lib/components/modals/Unsaved.svelte"
+  import UnsavedModal, { taintedMessage } from "$lib/components/modals/Unsaved.svelte"
   import DeleteModal from "$lib/components/modals/Delete.svelte"
   import CrossTickSwitch from "$lib/components/switches/CrossTickSwitch.svelte"
 
@@ -12,23 +12,21 @@
 
   let coverImgSrc = $state(getElectionCoverImage(data.election.id))
 
-  let unsavedModal: UnsavedModal
-
-  const { form, enhance, isTainted, tainted } = superForm(data.updateForm!, {
+  const { form, enhance, isTainted, tainted } = superForm(data.updateForm, {
     resetForm: false,
     onUpdated: () => {
       coverImgSrc = getElectionCoverImage(data.election.id)
     },
-    taintedMessage: () => unsavedModal.taintedMessage(),
+    taintedMessage,
   })
-
-  let unsaved = $derived(isTainted($tainted))
 </script>
 
-<UnsavedModal bind:this={unsavedModal} />
+<UnsavedModal />
 
 <div class="flex flex-wrap gap-2">
-  <button form="update" type="submit" class="btn preset-filled-primary-500" disabled={!unsaved}>Update Election</button>
+  <button form="update" type="submit" class="btn preset-filled-primary-500" disabled={!isTainted($tainted)}>
+    Update Election
+  </button>
   <DeleteModal name="Election" />
 </div>
 
@@ -103,7 +101,7 @@
       <h4 class="h4">Motion Settings</h4>
       <label class="label">
         <span class="label-text">Motions Enabled</span>
-        <CrossTickSwitch name="motionsEnabled" bind:checked={$form.motionEnabled} />
+        <CrossTickSwitch name="motionEnabled" bind:checked={$form.motionEnabled} />
       </label>
       <label class="label">
         <span class="label-text">Max Characters in Motion Description</span>
