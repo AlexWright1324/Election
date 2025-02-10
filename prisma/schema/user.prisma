@@ -3,10 +3,11 @@ model User {
     name   String
 
     electionAdmins         Election[]
+    electionMembers        Election[]  @relation("ElectionMembers")
     candidates             Candidate[]
-    candidateUserInvites   Candidate[]       @relation("CandidateUserInvites")
-    motionSeconders        Motion[]          @relation("MotionSeconders")
-    motionProposers        Motion[]          @relation("MotionProposers")
-    motionSeconderRequests Motion[]          @relation("MotionSeconderRequests")
+    candidateUserInvites   Candidate[] @relation("CandidateUserInvites")
+    motionSeconders        Motion[]    @relation("MotionSeconders")
+    motionProposers        Motion[]    @relation("MotionProposers")
+    motionSeconderRequests Motion[]    @relation("MotionSeconderRequests")
     voters                 Voter[]
 }

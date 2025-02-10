@@ -10,6 +10,11 @@ model Election {
   candidateStart DateTime?
   candidateEnd   DateTime?
 
+  // Membership
+  membersOnly Boolean @default(false)
+  apiKey      String  @default("")
+  members     User[]  @relation("ElectionMembers")
+
   // Candidate Settings
   candidateDefaultDescription String @default("")
   candidateMaxDescription     Int    @default(1000)
@@ -80,13 +85,13 @@ model Role {
 }
 
 model Candidate {
-  id              Int               @id @default(autoincrement())
-  description     String
-  election        Election          @relation(fields: [electionID], references: [id], onDelete: Cascade)
-  users           User[]
-  roles           Role[]
-  votes           Vote[]
-  userInvites     User[]            @relation("CandidateUserInvites")
+  id          Int      @id @default(autoincrement())
+  description String
+  election    Election @relation(fields: [electionID], references: [id], onDelete: Cascade)
+  users       User[]
+  roles       Role[]
+  votes       Vote[]
+  userInvites User[]   @relation("CandidateUserInvites")
 
   electionID Int
 }
