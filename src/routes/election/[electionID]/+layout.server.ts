@@ -1,45 +1,30 @@
-import { requireElection } from "$lib/server/auth"
-import { isElectionAdmin } from "$lib/server/election"
+import { error } from "@sveltejs/kit"
 
-export const load = requireElection(
-  {
-    id: true,
-    name: true,
-    description: true,
-    motionEnabled: true,
-    motions: {
-      select: {
-        id: true,
-        name: true,
-      },
+export const load = async ({ params, locals }) => {
+  const election = await locals.db.election.findUnique({
+    where: {
+      id: params.electionID,
     },
-    admins: {
-      select: {
-        userID: true,
-        name: true,
-      },
-    },
-    roles: {
-      select: {
-        id: true,
-        name: true,
-        candidates: {
-          select: {
-            id: true,
-            users: {
-              select: {
-                userID: true,
-                name: true,
-              },
+    include: {
+      admins: true,
+      roles: {
+        include: {
+          candidates: {
+            include: {
+              users: true,
             },
           },
         },
       },
+      motions: true,
     },
-  },
-  async ({ election }) => {
-    return {
-      election,
-    }
+  })
+
+  if (!election) {
+    return error(404, "Election not found")
   }
-)
+
+  return {
+    election,
+  }
+}

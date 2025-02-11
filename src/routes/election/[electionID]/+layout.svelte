@@ -13,7 +13,7 @@
   } = $props()
 </script>
 
-{#if data.election.admins.some((admin) => admin.userID === data.session?.user.userID)}
+{#if data.election.admins.some((admin) => admin.userID === data.user?.userID)}
   {@const url = `/election/${data.election.id}`}
   <Tabs name="Election Admin">
     <TabItem href={url}>Preview</TabItem>

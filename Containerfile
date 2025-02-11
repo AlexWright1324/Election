@@ -23,7 +23,7 @@ COPY . .
 
 # [optional] tests & build
 ENV NODE_ENV=production
-ENV DATABASE_URL=files:../db.sqlite
+ENV DATABASE_URL=file:/app/store/db.sqlite
 RUN bunx prisma generate
 RUN bun run build
 

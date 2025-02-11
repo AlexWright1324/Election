@@ -40,6 +40,7 @@
               export PRISMA_QUERY_ENGINE_LIBRARY="${prisma-engines}/lib/libquery_engine.node"
               export PRISMA_INTROSPECTION_ENGINE_BINARY="${prisma-engines}/bin/introspection-engine"
               export LD_LIBRARY_PATH="${stdenv.cc.cc.lib}/lib"
+              export DATABASE_URL="file:../store/db.sqlite"
             '';
           };
 

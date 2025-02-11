@@ -1,0 +1,205 @@
+generator client {
+  provider = "prisma-client-js"
+  // previewFeatures = ["prismaSchemaFolder"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Election {
+  id                          String      @id @default(cuid(2))
+  name                        String      @default("New Election")
+  description                 String      @default("# Welcome to my election!\n> Please read the rules and guidelines below before proceeding.\n")
+  published                   Boolean     @default(false)
+
+  // Timing
+  start                       DateTime?
+  end                         DateTime?
+  signUpEnd                   DateTime?
+
+  @@validate(published && start == null, "Cannot publish an election that has no start date")
+  @@validate(published && end == null, "Cannot publish an election that has no end date")
+  @@validate(published && signUpEnd == null, "Cannot publish an election that has no sign-up end date")
+  @@validate((start == null && end == null) || start < end, "Start date must be before end date")
+  @@validate((start == null && signUpEnd == null) || signUpEnd < start, "Sign-Up end date must be before start date")
+
+  // Membership
+  membersOnly                 Boolean     @default(false)
+  apiKey                      String      @default("")
+  members                     User[]      @relation("ElectionMembers")
+
+  // Candidate
+  candidateDefaultDescription String      @default("") @length(0, candidateMaxDescription, "Candidate description is too long")
+  candidateMaxDescription     Int         @default(1000)
+  candidateMaxUsers           Int         @default(1)
+
+  // Motion
+  motionEnabled               Boolean     @default(true)
+  motionDefaultDescription    String      @default("# The Society notes:\n# The Society believes:\n# The Society resolves to:\n") @length(0, motionMaxDescription, "Motion description is too long")
+  motionMaxDescription        Int         @default(1000)
+  motionMaxSeconders          Int         @default(1)
+
+  // Results
+  resultsPublished            Boolean     @default(false)
+
+  admins                      User[]
+  roles                       Role[]
+  voters                      Voter[]
+  ballots                     Ballot[]
+  candidates                  Candidate[]
+  motions                     Motion[]
+
+  @@allow("all", admins?[auth().userID == userID])
+
+  @@allow("create", auth() != null)
+
+  @@allow("read", published && !membersOnly)
+  @@allow("read", published && membersOnly && members?[auth().userID == userID])
+}
+
+model Voter {
+  user       User     @relation(fields: [userID], references: [userID], onDelete: Cascade)
+  election   Election @relation(fields: [electionID], references: [id], onDelete: Cascade)
+
+  userID     String
+  electionID String
+
+  // Cannot link with Ballot/Vote due to traceability
+  @@unique([userID, electionID])
+
+  @@deny("all", auth() == null)
+
+  @@deny("create", !(election.start <= now() && now() < election.end))
+  @@allow("create", !election.membersOnly)
+  @@allow("create", election.membersOnly && election.members?[auth().userID == userID])
+
+  @@allow("read", election.admins?[auth().userID == userID])
+  @@allow("read", auth().userID == userID)
+}
+
+// Could time discrepancy be an issue? No, Make in one transaction :) 
+
+model Ballot {
+  id         Int      @id @default(autoincrement())
+  election   Election @relation(fields: [electionID], references: [id], onDelete: Cascade)
+  signature  String   @default(cuid(2)) @deny('update', true)
+
+  electionID String
+
+  votes      Vote[]
+
+  @@deny("all", auth() == null)
+  @@deny("update", true)
+
+  @@deny("create", !(election.start <= now() && now() < election.end))
+  @@allow("create", !election.membersOnly)
+  @@allow("create", election.membersOnly && election.members?[auth().userID == userID])
+
+  @@allow("read", election.admins?[auth().userID == userID])
+}
+
+model Vote {
+  ballot      Ballot    @relation(fields: [ballotID], references: [id], onDelete: Cascade)
+  role        Role      @relation(fields: [roleID], references: [id], onDelete: Cascade)
+  candidate   Candidate @relation(references: [id], fields: [candidateID], onDelete: Cascade)
+  position    Int
+
+  roleID      Int
+  ballotID    Int
+  candidateID String
+
+  // Only one vote per role per ballot
+  @@unique([ballotID, roleID])
+
+  @@deny("update", true)
+  @@allow("create", check(ballot, "create"))
+  @@allow("read", check(ballot, "read"))
+}
+
+model Role {
+  id          Int         @id @default(autoincrement())
+  name        String      @default("New Role")
+  seatsToFill Int         @default(1) @gte(1)
+  election    Election    @relation(fields: [electionID], references: [id], onDelete: Cascade)
+
+  electionID  String
+
+  candidates  Candidate[]
+  votes       Vote[]
+
+  // Timing
+  @@deny("update, delete", election.start <= now())
+
+  @@allow("create, delete", election.admins?[auth().userID == userID])
+  @@allow("update", check(election, "update"))
+  @@allow("read", check(election, "read"))
+}
+
+model Candidate {
+  id          String   @id @default(cuid(2))
+  description String
+  election    Election @relation(fields: [electionID], references: [id], onDelete: Cascade)
+
+  electionID  String
+
+  users       User[]
+  roles       Role[]
+  votes       Vote[]
+  userInvites User[]   @relation("CandidateUserInvites")
+
+  // Limitation: Respect election.candidateMaxUsers
+
+  @@deny("create", auth() == null)
+  @@deny("create", !(now() <= election.signUpEnd))
+
+  @@allow("create", !election.membersOnly)
+  @@allow("create", election.membersOnly && election.members?[auth().userID == userID])
+
+  @@allow("read", check(election, "read"))
+
+  @@allow("update", users?[auth().userID == userID])
+}
+
+model Motion {
+  id               Int      @id @default(autoincrement())
+  name             String   @default("New Motion")
+  description      String
+  election         Election @relation(fields: [electionID], references: [id], onDelete: Cascade)
+  proposer         User     @relation("MotionProposers", fields: [proposerID], references: [userID], onDelete: Cascade)
+  seconders        User[]   @relation("MotionSeconders")
+  seconderRequests User[]   @relation("MotionSeconderRequests") // TODO: Specific policy for this?
+
+  electionID       String
+  proposerID       String
+
+  // Limitation: Respect election.motionMaxSeconders
+
+  @@deny("create", auth() == null)
+  @@deny("create", !(now() <= election.signUpEnd))
+  @@deny("create", !election.motionEnabled)
+
+  @@allow("create", !election.membersOnly)
+  @@allow("create", election.membersOnly && election.members?[auth().userID == userID])
+
+  @@allow("read", check(election, "read"))
+
+  @@allow("update", auth() == proposer)
+}
+
+model User {
+  userID                 String      @id
+  name                   String
+
+  electionAdmins         Election[]
+  electionMembers        Election[]  @relation("ElectionMembers")
+  candidates             Candidate[]
+  candidateUserInvites   Candidate[] @relation("CandidateUserInvites")
+  motionSeconders        Motion[]    @relation("MotionSeconders")
+  motionProposers        Motion[]    @relation("MotionProposers")
+  motionSeconderRequests Motion[]    @relation("MotionSeconderRequests")
+  voters                 Voter[]
+
+  @@allow("read", auth() != null)
+}

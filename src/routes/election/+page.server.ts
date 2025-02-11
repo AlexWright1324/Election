@@ -1,55 +1,61 @@
-import { PrismaClient } from "$lib/server/db"
+import { Prisma } from "@prisma/client"
 import { redirect } from "@sveltejs/kit"
-import type { PageServerLoad } from "./$types"
-import { requireAuth } from "$lib/server/auth"
+import { superValidate, fail, setError } from "sveltekit-superforms"
+import { zod } from "sveltekit-superforms/adapters"
+import { z } from "zod"
 
-export const load: PageServerLoad = async ({ parent }) => {
-  const { session } = await parent()
+const emptySchema = z.object({})
 
-  const elections = await PrismaClient.election.findMany({
-    where: {
-      published: true,
-    },
-    select: {
-      id: true,
-      name: true,
-      start: true,
-      end: true,
-      candidateStart: true,
-      candidateEnd: true,
-    }
-  })
-  
-  const managedElections = session?.user.userID
-    ? await PrismaClient.election.findMany({
+export const load = async ({ locals }) => {
+  const elections = await locals.db.election.findMany()
+
+  const managedElections = locals.user?.userID
+    ? await locals.db.election.findMany({
         where: {
           admins: {
             some: {
-              userID: session.user.userID,
+              userID: locals.user.userID,
             },
           },
         },
       })
     : []
-      
+
   return {
     elections,
     managedElections,
+    createElectionForm: await superValidate(zod(emptySchema)),
   }
 }
 
 export const actions = {
-  create: requireAuth(async ({ userID }) => {
-    const election = await PrismaClient.election.create({
-      data: {
-        admins: {
-          connect: {
-            userID
+  create: async ({ request, locals }) => {
+    const form = await superValidate(request, zod(emptySchema))
+
+    if (!form.valid) {
+      return fail(400, { form })
+    }
+
+    try {
+      const election = await locals.db.election.create({
+        select: {
+          id: true,
+        },
+        data: {
+          admins: {
+            connect: {
+              userID: locals.user?.userID,
+            },
           },
         },
-      },
-    })
+      })
 
-    return redirect(303, `/election/${election.id}`)
-  }),
+      return redirect(303, `/election/${election.id}`)
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        return setError(form, "", error.message)
+      }
+      throw error
+    }
+  },
 }

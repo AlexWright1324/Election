@@ -1,38 +1,32 @@
 <script lang="ts">
-  import { enhance } from "$app/forms"
-  
   import { getElectionCoverImage } from "$lib/client/store"
   import { formatTimeDiff, currentDateTime } from "$lib/client/time.svelte"
   import Card from "$lib/components/Card.svelte"
-  import { Tooltip } from "@skeletonlabs/skeleton-svelte"
+  import { superForm } from "sveltekit-superforms"
 
   let { data } = $props()
+
+  const { enhance: createElectionEnhance, errors: createElectionErrors } = superForm(data.createElectionForm)
 </script>
 
-<Tooltip contentBase="card preset-filled-surface-500 p-2 {data.session?.user === undefined ? "" : "hidden"}" openDelay={50}>
-  {#snippet trigger()}
-    <form method="post" action="?/create" use:enhance>
-      <button type="submit" class="btn preset-tonal" disabled={data.session?.user === undefined}>Create New Election</button>
-    </form>
-  {/snippet}
-  {#snippet content()}
-    <p>You must be logged in to create an election.</p>
-  {/snippet}
-</Tooltip>
+<form class="flex" method="post" action="?/create" use:createElectionEnhance>
+  <button type="submit" class="btn preset-tonal" disabled={data.user === undefined}>
+    Create New Election
+  </button>
+  {#if $createElectionErrors}
+    <p class="text-error-500">{$createElectionErrors._errors}</p>
+  {/if}
+</form>
 
-{#snippet ElectionCard(election: typeof data.elections[0])}
+{#snippet ElectionCard(election: (typeof data.elections)[0])}
   <Card href="/election/{election.id}" image={getElectionCoverImage(election.id)}>
     <h3 class="h3">{election.name}</h3>
     {#snippet footer()}
       {election.start}
-      {#if election.candidateStart && election.candidateEnd}
-        {#if election.candidateStart > currentDateTime.value}
+      {#if election.signUpEnd}
+        {#if currentDateTime.value < election.signUpEnd}
           <p>
-            Candidate signups start in {formatTimeDiff(election.candidateStart, currentDateTime.value)}
-          </p>
-        {:else if election.candidateEnd > currentDateTime.value}
-          <p>
-            Candidate signups end in {formatTimeDiff(election.candidateEnd, currentDateTime.value)}
+            Sign-ups end in {formatTimeDiff(election.signUpEnd, currentDateTime.value)}
           </p>
         {/if}
       {/if}
@@ -57,7 +51,7 @@
   <h2 class="h2">Your Elections</h2>
   <div>
     {#each data.managedElections as election}
-    {@render ElectionCard(election)}
+      {@render ElectionCard(election)}
     {/each}
   </div>
 {/if}

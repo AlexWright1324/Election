@@ -15,12 +15,12 @@ export const zImage = z
     message: "Image size must be less than 5MB",
   })
 
-export const storeElectionCoverImage = async (electionID: number, file: File) => {
+export const storeElectionCoverImage = async (electionID: string, file: File) => {
   const filePath = join(storePath, electionPath, electionID.toString(), coverImageName)
   return await storeImage(file, filePath)
 }
 
-export const storeCandidateCoverImage = async (electionID: number, candidateID: number, file: File) => {
+export const storeCandidateCoverImage = async (electionID: string, candidateID: string, file: File) => {
   const filePath = join(
     storePath,
     electionPath,

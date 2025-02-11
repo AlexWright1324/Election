@@ -28,3 +28,9 @@ vite.config.ts.timestamp-*
 # Nix
 /.direnv
 /.pre-commit-config.yaml
+
+# Libreoffice
+.~lock.*
+
+# ZenStack
+.zenstack_repl_history

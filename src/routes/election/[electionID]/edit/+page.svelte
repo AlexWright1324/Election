@@ -7,6 +7,10 @@
   import UnsavedModal, { taintedMessage } from "$lib/components/modals/Unsaved.svelte"
   import DeleteModal from "$lib/components/modals/Delete.svelte"
   import CrossTickSwitch from "$lib/components/switches/CrossTickSwitch.svelte"
+  import { getContext } from 'svelte';
+  import { type ToastContext } from '@skeletonlabs/skeleton-svelte';
+
+  export const toast: ToastContext = getContext('toast');
 
   let { data } = $props()
 
@@ -14,8 +18,15 @@
 
   const { form, enhance, isTainted, tainted } = superForm(data.updateForm, {
     resetForm: false,
-    onUpdated: () => {
+    onUpdated: ({ form }) => {
       coverImgSrc = getElectionCoverImage(data.election.id)
+      if (form.message) {
+        toast.create({
+          title: "Error",
+          description: form.message.text,
+          type: "error",
+        })
+      }
     },
     taintedMessage,
   })
@@ -66,12 +77,8 @@
     </div>
     <div class="flex gap-4 flex-wrap">
       <label class="label flex-1">
-        <span class="label-text">Candidate Sign-up Opening Date</span>
-        <input class="input" type="datetime-local" name="candidateStart" bind:value={$form.candidateStart} />
-      </label>
-      <label class="label flex-1">
-        <span class="label-text">Candidate Sign-up Ending Date</span>
-        <input class="input" type="datetime-local" name="candidateEnd" bind:value={$form.candidateEnd} />
+        <span class="label-text">Sign-up Closing Date</span>
+        <input class="input" type="datetime-local" name="signUpEnd" bind:value={$form.signUpEnd} />
       </label>
     </div>
     <div class="grow max-w-full">
