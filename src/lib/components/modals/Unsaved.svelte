@@ -21,8 +21,6 @@
 
 <CustomModal bind:open header="Unsaved Changes" text="Are you sure you want to leave?">
   {#snippet buttons()}
-    <button type="button" class="btn preset-filled-error-500" {onclick}>
-      Discard Changes
-    </button>
+    <button type="button" class="btn preset-filled-error-500" {onclick}> Discard Changes </button>
   {/snippet}
 </CustomModal>

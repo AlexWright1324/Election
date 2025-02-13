@@ -1,10 +1,11 @@
-import { join } from "node:path"
-import { rm, mkdir } from "node:fs/promises"
 import { PrismaClient } from "$lib/server/db"
 import { storePath } from "$lib/server/store"
-import type { Prisma } from "@prisma/client"
 
-export const isElectionAdmin = async (electionID: number, userID: string): Promise<boolean> => {
+import type { Prisma } from "@prisma/client"
+import { rm, mkdir } from "node:fs/promises"
+import { join } from "node:path"
+
+export const isElectionAdmin = async (electionID: string, userID: string): Promise<boolean> => {
   const election = await PrismaClient.election.findUnique({
     where: {
       id: electionID,
@@ -18,7 +19,7 @@ export const isElectionAdmin = async (electionID: number, userID: string): Promi
   return election !== null
 }
 
-export const isCandidateAdmin = async (candidateID: number, userID: string): Promise<boolean> => {
+export const isCandidateAdmin = async (candidateID: string, userID: string): Promise<boolean> => {
   const candidate = await PrismaClient.candidate.findUnique({
     where: {
       id: candidateID,
@@ -32,7 +33,7 @@ export const isCandidateAdmin = async (candidateID: number, userID: string): Pro
   return candidate !== null
 }
 
-export const deleteElection = async (electionID: number) => {
+export const deleteElection = async (electionID: string) => {
   await PrismaClient.election.delete({
     where: {
       id: electionID,

@@ -1,9 +1,12 @@
-import { PrismaClient } from "$lib/server/db"
-import { redirect } from "@sveltejs/kit"
-import type { PageServerLoad } from "./$types"
+import { emptySchema } from "$lib/client/schema"
 import { requireAuth } from "$lib/server/auth"
+import { Prisma, PrismaClient } from "$lib/server/db"
 
-export const load: PageServerLoad = async ({ parent }) => {
+import { redirect } from "@sveltejs/kit"
+import { fail, setError, superValidate } from "sveltekit-superforms"
+import { zod } from "sveltekit-superforms/adapters"
+
+export const load = async ({ parent }) => {
   const { session } = await parent()
 
   const elections = await PrismaClient.election.findMany({
@@ -15,11 +18,10 @@ export const load: PageServerLoad = async ({ parent }) => {
       name: true,
       start: true,
       end: true,
-      candidateStart: true,
-      candidateEnd: true,
-    }
+      signUpEnd: true,
+    },
   })
-  
+
   const managedElections = session?.user.userID
     ? await PrismaClient.election.findMany({
         where: {
@@ -31,25 +33,36 @@ export const load: PageServerLoad = async ({ parent }) => {
         },
       })
     : []
-      
+
   return {
     elections,
     managedElections,
+    createForm: await superValidate(zod(emptySchema)),
   }
 }
 
 export const actions = {
-  create: requireAuth(async ({ userID }) => {
-    const election = await PrismaClient.election.create({
-      data: {
-        admins: {
-          connect: {
-            userID
+  create: requireAuth(async ({ request, userID }) => {
+    const form = await superValidate(request, zod(emptySchema))
+    if (!form.valid) return fail(400, { form })
+
+    try {
+      const election = await PrismaClient.election.create({
+        data: {
+          admins: {
+            connect: {
+              userID,
+            },
           },
         },
-      },
-    })
+      })
 
-    return redirect(303, `/election/${election.id}`)
+      return redirect(303, `/election/${election.id}`)
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        return setError(form, "", error.message)
+      }
+      throw error
+    }
   }),
 }

@@ -1,74 +1,78 @@
+import { requireElectionAdmin } from "$lib/server/auth"
 import { PrismaClient } from "$lib/server/db"
 
 import { message, fail, superValidate } from "sveltekit-superforms"
 import { zod } from "sveltekit-superforms/adapters"
 import { z } from "zod"
-import { requireElectionAdmin } from "$lib/server/auth"
 
 const editRolesSchema = z.object({
-  roles: z.array(
-    z.object({
+  roles: z
+    .object({
       id: z.number().nullable(),
-      name: z.string(),
-      seatsToFill: z.number().refine((n) => n >= 1),
+      name: z.string().min(2),
+      seatsToFill: z.number().min(1),
     })
-  ),
+    .array(),
 })
 
-export const load = async ({ parent }) => {
-  const { election } = await parent()
-
-  return {
-    editRolesForm: await superValidate({ roles: election.roles }, zod(editRolesSchema)),
-  }
-}
+export const load = requireElectionAdmin(
+  {
+    roles: {
+      select: {
+        id: true,
+        name: true,
+        seatsToFill: true,
+      },
+    },
+  },
+  async ({ election }) => {
+    return {
+      editRolesForm: await superValidate({ roles: election.roles }, zod(editRolesSchema)),
+    }
+  },
+)
 
 export const actions = {
-  editRoles: requireElectionAdmin({ id: true }, async ({ request, election }) => {
-    const form = await superValidate(request, zod(editRolesSchema))
-    if (!form.valid) return fail(400, { form })
+  editRoles: requireElectionAdmin(
+    {
+      id: true,
+      roles: {
+        select: {
+          id: true,
+        },
+      },
+    },
+    async ({ request, election }) => {
+      const form = await superValidate(request, zod(editRolesSchema))
+      if (!form.valid) return fail(400, { form })
 
-    await PrismaClient.$transaction(async (tx) => {
-      // Get existing roles for comparison
-      const existingRoles = await tx.role.findMany({
+      const existingIds = new Set(election.roles.map((r) => r.id))
+      const updatedIds = new Set(form.data.roles.map((r) => r.id).filter((id) => id !== null))
+      const idsToDelete = [...existingIds].filter((id) => !updatedIds.has(id))
+      const update = form.data.roles
+        .filter((r) => r.id !== null)
+        .map((r) => ({
+          where: { id: r.id as number },
+          data: { name: r.name, seatsToFill: r.seatsToFill },
+        }))
+      const create = form.data.roles
+        .filter((r) => r.id === null)
+        .map((r) => ({ name: r.name, seatsToFill: r.seatsToFill }))
+
+      await PrismaClient.election.update({
         where: { id: election.id },
+        data: {
+          roles: {
+            deleteMany: {
+              id: { in: idsToDelete },
+            },
+            update,
+            create,
+          },
+        },
       })
 
-      const existingIds = new Set(existingRoles.map((r) => r.id))
-      const updatedIds = new Set(form.data.roles.map((r) => r.id).filter((id) => id !== null))
-
-      // Delete removed roles
-      const idsToDelete = [...existingIds].filter((id) => !updatedIds.has(id))
-      if (idsToDelete.length > 0) {
-        await tx.role.deleteMany({
-          where: { id: { in: idsToDelete } },
-        })
-      }
-
-      // Update or create roles
-      for (const role of form.data.roles) {
-        if (role.id) {
-          await tx.role.update({
-            where: { id: role.id },
-            data: {
-              name: role.name,
-              seatsToFill: role.seatsToFill,
-            },
-          })
-        } else {
-          await tx.role.create({
-            data: {
-              name: role.name,
-              seatsToFill: role.seatsToFill,
-              election: {
-                connect: { id: election.id },
-              },
-            },
-          })
-        }
-      }
-    })
-
-    return message(form, "Updated")
-  }),
+      return message(form, "Updated")
+    },
+  ),
 }

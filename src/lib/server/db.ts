@@ -1,8 +1,6 @@
 import { env } from "$env/dynamic/private"
 import { PrismaClient as client, Prisma } from "@prisma/client"
 
-import { seperateJoin } from "$lib/client/separate"
-
 const baseClient = new client({
   datasources: {
     db: {
@@ -43,3 +41,4 @@ const existsClient = baseClient.$extends({
 }) */
 
 export const PrismaClient = existsClient
+export { Prisma } from "@prisma/client"

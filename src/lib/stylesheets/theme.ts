@@ -1,8 +1,8 @@
-import type { Theme } from '@skeletonlabs/skeleton/themes';
+import type { Theme } from "@skeletonlabs/skeleton/themes"
 
 const custom = {
-  "name": "custom",
-  "properties": {
+  name: "custom",
+  properties: {
     "--type-scale-factor": "1.067",
     "--type-scale-1": "calc(0.75rem * var(--type-scale-factor))",
     "--type-scale-2": "calc(0.875rem * var(--type-scale-factor))",
@@ -219,11 +219,11 @@ const custom = {
     "--color-surface-contrast-700": "var(--color-surface-contrast-light)",
     "--color-surface-contrast-800": "var(--color-surface-contrast-light)",
     "--color-surface-contrast-900": "var(--color-surface-contrast-light)",
-    "--color-surface-contrast-950": "var(--color-surface-contrast-light)"
+    "--color-surface-contrast-950": "var(--color-surface-contrast-light)",
   },
-  "metadata": {
-    "version": "3.0.0"
-  }
-} satisfies Theme;
+  metadata: {
+    version: "3.0.0",
+  },
+} satisfies Theme
 
-export default custom;
+export default custom

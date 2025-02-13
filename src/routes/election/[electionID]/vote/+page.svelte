@@ -1,6 +1,8 @@
 <script lang="ts">
   import DragOrderInput from "$lib/components/input/DragOrderInput.svelte"
+
   import SuperDebug, { superForm } from "sveltekit-superforms"
+
   let { data } = $props()
 
   const { form, enhance } = superForm(data.voteForm, {
@@ -19,7 +21,7 @@
 <form action="?/vote" method="post" use:enhance>
   {#each data.election.roles as role, index}
     <h2 class="h2">{role.name}</h2>
-    <DragOrderInput candidates={role.candidates} bind:value={$form.roles[index].candidates} />
+    <DragOrderInput candidates={role.candidates} bind:value={$form.roles[index].candidates} ron={true} />
   {/each}
 
   {#each data.election.motions as motion, index}

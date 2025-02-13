@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { enhance } from "$app/forms"
-
   import CustomModal from "$lib/components/modals/Custom.svelte"
+
+  import { enhance } from "$app/forms"
 
   let {
     name,

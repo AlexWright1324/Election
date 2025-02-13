@@ -1,8 +1,8 @@
+import { PrismaClient, type Prisma } from "$lib/server/db"
+
 import { SvelteKitAuth } from "@auth/sveltekit"
 import Keycloak from "@auth/sveltekit/providers/keycloak"
-import { PrismaClient } from "$lib/server/db"
 import { error, fail, type RequestEvent, type ServerLoadEvent } from "@sveltejs/kit"
-import type { Prisma } from "@prisma/client"
 
 declare module "@auth/sveltekit" {
   interface Session {
@@ -59,13 +59,8 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
       // Find or create user
       await PrismaClient.user.upsert({
         where: { userID: profile.uni_id },
-        update: {
-          name: profile.name,
-        },
-        create: {
-          userID: profile.uni_id,
-          name: profile.name,
-        },
+        update: { name: profile.name },
+        create: { userID: profile.uni_id, name: profile.name },
       })
 
       return true
@@ -74,118 +69,90 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
 })
 
 type LoadOrAction = ServerLoadEvent | RequestEvent
-type ExcludeFailure<R> = Promise<Exclude<Awaited<R>, ReturnType<typeof fail> | ReturnType<typeof error>>>
 
 const isServerLoad = (event: LoadOrAction): event is ServerLoadEvent => {
   return (event as ServerLoadEvent).parent !== undefined
 }
 
-const failure = (event: LoadOrAction, status: number, message: string) => {
-  return isServerLoad(event) ? fail(status, { message }) : error(status, message)
+const handleFailure = <E extends LoadOrAction>(event: LoadOrAction, status: number, message: string) => {
+  return (isServerLoad(event)
+    ? error(status, message)
+    : fail(status, { message })) as unknown as E extends ServerLoadEvent ? ReturnType<typeof error> : never
 }
 
-export const requireAuth = <T extends RequestEvent, R>(
-  callback: (event: T & { userID: string }) => R | Promise<R>
-): ((event: T) => ExcludeFailure<R>) => {
+export const requireAuth = <T extends LoadOrAction, R>(handler: (event: T & { userID: string }) => Promise<R> | R) => {
   return async (event: T) => {
-    const session = await event.locals.auth()
-    if (!session) {
-      return failure(event, 401, "You must be logged in") as any
-    }
-
-    return callback({ ...event, userID: session.user.userID })
+    if (!event.locals.session) return handleFailure(event, 401, "Unauthorised")
+    return handler({ ...event, userID: event.locals.session.user.userID })
   }
 }
 
-export const requireElection = <T extends RequestEvent, R, S extends Prisma.ElectionSelect>(
+export const requireElection = <T extends LoadOrAction, S extends Prisma.ElectionSelect, R>(
   select: S,
-  callback: (event: T & { election: Prisma.ElectionGetPayload<{ select: S }> }) => Promise<R> | R
-): ((event: T) => ExcludeFailure<R>) => {
+  handler: (event: T & { election: Prisma.ElectionGetPayload<{ select: S }> }) => Promise<R> | R,
+) => {
   return async (event: T) => {
-    const electionID = Number(event.params.electionID)
+    const electionID = event.params.electionID
+    if (!electionID) return handleFailure(event, 400, "Missing election ID")
 
     const electionExists = await PrismaClient.election.findUnique({
-      where: {
-        id: electionID,
-      },
-      select: {
-        published: true,
-        admins: {
-          select: {
-            userID: true,
-          },
-        },
-      }
+      where: { id: electionID },
+      select: { published: true, admins: { select: { userID: true } } },
     })
 
-    if (!electionExists) {
-      return failure(event, 404, "Election not found") as any
-    }
+    if (!electionExists) return handleFailure(event, 404, "Election not found")
 
-    if (electionExists.published === false) {
-      const session = await event.locals.auth()
-      if (!session) {
-        return failure(event, 401, "You must be logged in") as any
-      }
-
-      const isAdmin = electionExists.admins.some((admin) => admin.userID === session.user.userID)
-      if (!isAdmin) {
-        return failure(event, 403, "Election not published") as any
-      }
-    }
-
-    const election = (await PrismaClient.election.findUnique({
-      where: {
-        id: electionID,
-      },
-      select,
-    }))!
-
-    return callback({ ...event, election })
-  }
-}
-
-export const requireElectionAdmin = <T extends RequestEvent, R, S extends Prisma.ElectionSelect>(
-  select: S,
-  callback: (event: T & { userID: string; election: Prisma.ElectionGetPayload<{ select: S }> }) => Promise<R> | R
-): ((event: T) => ExcludeFailure<R>) => {
-  return requireAuth(async (event: T & { userID: string }) => {
-    const electionID = Number(event.params.electionID)
-
-    const electionExists = await PrismaClient.election.exists({
-      id: electionID,
-    })
-
-    if (!electionExists) {
-      return failure(event, 404, "Election not found")
+    if (!electionExists.published) {
+      const isAdmin = electionExists.admins.some((admin) => admin.userID === event.locals.session?.user.userID)
+      if (!isAdmin) return handleFailure(event, 403, "Election not published")
     }
 
     const election = await PrismaClient.election.findUnique({
       where: {
         id: electionID,
-        admins: {
-          some: {
-            userID: event.userID,
-          },
-        },
       },
       select,
     })
 
-    if (!election) {
-      return failure(event, 403, "You are not an admin of this Election")
-    }
+    if (!election) return handleFailure(event, 404, "Election not found?")
 
-    return callback({ ...event, election })
+    return handler({ ...event, election })
+  }
+}
+
+export function requireElectionAdmin<T extends LoadOrAction, S extends Prisma.ElectionSelect, R>(
+  select: S,
+  handler: (event: T & { election: Prisma.ElectionGetPayload<{ select: S }>; userID: string }) => Promise<R> | R,
+) {
+  return requireAuth(async (event: T & { userID: string }) => {
+    const electionID = event.params.electionID
+    if (!electionID) return handleFailure(event, 400, "Missing election ID")
+
+    const electionExists = await PrismaClient.election.exists({ id: electionID })
+
+    if (!electionExists) return handleFailure(event, 404, "Election not found")
+
+    const election = await PrismaClient.election.findUnique({
+      where: {
+        id: electionID,
+        admins: { some: { userID: event.userID } },
+      },
+      select,
+    })
+
+    if (!election) return handleFailure(event, 403, "Not an election admin")
+
+    return handler({ ...event, election })
   })
 }
 
-export const requireCandidate = <T extends RequestEvent, R, S extends Prisma.CandidateSelect>(
+export const requireCandidate = <T extends LoadOrAction, S extends Prisma.CandidateSelect, R>(
   select: S,
-  callback: (event: T & { candidate: Prisma.CandidateGetPayload<{ select: S }> }) => Promise<R> | R
-): ((event: T) => ExcludeFailure<R>) => {
+  handler: (event: T & { candidate: Prisma.CandidateGetPayload<{ select: S }> }) => Promise<R> | R,
+) => {
   return async (event: T) => {
-    const candidateID = Number(event.params.candidateID)
+    const candidateID = event.params.candidateID
+    if (!candidateID) return handleFailure(event, 400, "Missing candidate ID")
 
     const candidate = await PrismaClient.candidate.findUnique({
       where: {
@@ -194,28 +161,24 @@ export const requireCandidate = <T extends RequestEvent, R, S extends Prisma.Can
       select,
     })
 
-    if (!candidate) {
-      return failure(event, 404, "Candidate not found") as any
-    }
+    if (!candidate) return handleFailure(event, 404, "Candidate not found")
 
-    return callback({ ...event, candidate })
+    return handler({ ...event, candidate })
   }
 }
 
-export const requireCandidateAdmin = <T extends RequestEvent, R, S extends Prisma.CandidateSelect>(
+export const requireCandidateAdmin = <T extends LoadOrAction, S extends Prisma.CandidateSelect, R>(
   select: S,
-  callback: (event: T & { userID: string; candidate: Prisma.CandidateGetPayload<{ select: S }> }) => Promise<R> | R
-): ((event: T) => ExcludeFailure<R>) => {
+  handler: (event: T & { candidate: Prisma.CandidateGetPayload<{ select: S }>; userID: string }) => Promise<R> | R,
+) => {
   return requireAuth(async (event: T & { userID: string }) => {
-    const candidateID = Number(event.params.candidateID)
+    const candidateID = event.params.candidateID
 
     const candidateExists = await PrismaClient.candidate.exists({
       id: candidateID,
     })
 
-    if (!candidateExists) {
-      return failure(event, 404, "Candidate not found")
-    }
+    if (!candidateExists) return handleFailure(event, 404, "Candidate not found")
 
     const candidate = await PrismaClient.candidate.findUnique({
       where: {
@@ -229,20 +192,19 @@ export const requireCandidateAdmin = <T extends RequestEvent, R, S extends Prism
       select,
     })
 
-    if (!candidate) {
-      return failure(event, 403, "You are not an admin of this candidate")
-    }
+    if (!candidate) return handleFailure(event, 403, "You are not an admin of this candidate")
 
-    return callback({ ...event, candidate })
+    return handler({ ...event, candidate })
   })
 }
 
-export const requireMotion = <T extends RequestEvent, R, S extends Prisma.MotionSelect>(
+export const requireMotion = <T extends LoadOrAction, S extends Prisma.MotionSelect, R>(
   select: S,
-  callback: (event: T & { motion: Prisma.MotionGetPayload<{ select: S }> }) => Promise<R> | R
-): ((event: T) => ExcludeFailure<R>) => {
+  callback: (event: T & { motion: Prisma.MotionGetPayload<{ select: S }> }) => Promise<R> | R,
+) => {
   return async (event: T) => {
-    const motionID = Number(event.params.motionID)
+    const motionID = event.params.motionID
+    if (!motionID) return handleFailure(event, 400, "Missing motion ID")
 
     const motion = await PrismaClient.motion.findUnique({
       where: {
@@ -251,28 +213,23 @@ export const requireMotion = <T extends RequestEvent, R, S extends Prisma.Motion
       select,
     })
 
-    if (!motion) {
-      return failure(event, 404, "Motion not found") as any
-    }
+    if (!motion) return handleFailure(event, 404, "Motion not found")
 
     return callback({ ...event, motion })
   }
 }
 
-export const requireMotionAdmin = <T extends RequestEvent, R, S extends Prisma.MotionSelect>(
+export const requireMotionAdmin = <T extends LoadOrAction, S extends Prisma.MotionSelect, R>(
   select: S,
-  callback: (event: T & { userID: string; motion: Prisma.MotionGetPayload<{ select: S }> }) => Promise<R> | R
-): ((event: T) => ExcludeFailure<R>) => {
-  return requireAuth(async (event: T & { userID: string }) => {
-    const motionID = Number(event.params.motionID)
+  callback: (event: T & { motion: Prisma.MotionGetPayload<{ select: S }> }) => Promise<R> | R,
+) => {
+  return requireAuth(async (event: T & { userID: string }): Promise<R> => {
+    const motionID = event.params.motionID
+    if (!motionID) return handleFailure(event, 400, "Missing motion ID")
 
-    const motionExists = await PrismaClient.motion.exists({
-      id: motionID,
-    })
+    const motionExists = await PrismaClient.motion.exists({ id: motionID })
 
-    if (!motionExists) {
-      return failure(event, 404, "Motion not found")
-    }
+    if (!motionExists) return handleFailure(event, 404, "Motion not found")
 
     const motion = await PrismaClient.motion.findUnique({
       where: {
@@ -284,9 +241,7 @@ export const requireMotionAdmin = <T extends RequestEvent, R, S extends Prisma.M
       select,
     })
 
-    if (!motion) {
-      return failure(event, 403, "You are not the proposer of this Motion")
-    }
+    if (!motion) return handleFailure(event, 403, "You are not the proposer of this Motion")
 
     return callback({ ...event, motion })
   })

@@ -1,6 +1,7 @@
 # https://bun.sh/guides/ecosystem/docker
 
 FROM oven/bun:latest AS base
+ENV DATABASE_URL=file:/app/store/db.sqlite
 WORKDIR /app
 
 # install dependencies into temp directory
@@ -23,7 +24,7 @@ COPY . .
 
 # [optional] tests & build
 ENV NODE_ENV=production
-ENV DATABASE_URL=files:../db.sqlite
+
 RUN bunx prisma generate
 RUN bun run build
 
@@ -37,5 +38,4 @@ COPY --from=prerelease /app/prisma ./prisma
 USER bun
 VOLUME /app/store
 EXPOSE 3000/tcp
-ENV DATABASE_URL=file:/app/store/db.sqlite
 CMD [ "sh", "-c", "bunx prisma migrate deploy && echo 'Running Build...' && bun --bun ./build"]

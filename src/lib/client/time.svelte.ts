@@ -1,27 +1,44 @@
-export function formatTimeDiff(date1: Date, date2: Date) {
-	// Add 1s because starting in 0s is silly
-	const msDiff = Math.abs(date1.getTime() - date2.getTime()) + 1000
+import { seperateJoin } from "$lib/client/separate"
 
-	let totalSeconds = Math.floor(msDiff / 1000)
-	const days = Math.floor(totalSeconds / (3600 * 24))
-	totalSeconds %= 3600 * 24
-	const hours = Math.floor(totalSeconds / 3600)
-	totalSeconds %= 3600
-	const minutes = Math.floor(totalSeconds / 60)
-	const seconds = totalSeconds % 60
+export const date = $state({
+  now: new Date(),
+})
 
-	// Create an array to store non-zero values
-	const timeString = []
+setInterval(() => {
+  date.now = new Date()
+}, 1000)
 
-	if (days > 0) timeString.push(`${days} day${days > 1 ? "s" : ""}`)
-	if (hours > 0) timeString.push(`${hours} hour${hours > 1 ? "s" : ""}`)
-	if (minutes > 0) timeString.push(`${minutes} minute${minutes > 1 ? "s" : ""}`)
-	if (seconds > 0 || timeString.length === 0)
-		timeString.push(`${seconds} second${seconds > 1 ? "s" : ""}`)
-
-	return timeString.join(", ")
+function secondsDiff(start: Date, end: Date) {
+  return (end.getTime() - start.getTime()) / 1000
 }
 
-export const currentDateTime = $state({
-	value: new Date(),
-})
+function humanReadableTime(startingSeconds: number, units: number = 1) {
+  let remaining = startingSeconds
+
+  const days = Math.floor(remaining / (3600 * 24))
+  remaining %= 3600 * 24
+  const hours = Math.floor(remaining / 3600)
+  remaining %= 3600
+  const minutes = Math.floor(remaining / 60)
+  remaining %= 60
+  const seconds = Math.floor(remaining)
+
+  const plural = (time: number) => (time > 1 ? "s" : "")
+  const pluralise = (time: number, unit: string) => `${unit}${plural(time)}`
+
+  // Create an array of time units
+  const timeArray = [
+    days ? `${days} ${pluralise(days, "day")}` : "",
+    hours ? `${hours} ${pluralise(hours, "hour")}` : "",
+    minutes ? `${minutes} ${pluralise(minutes, "minute")}` : "",
+    seconds ? `${seconds} ${pluralise(seconds, "second")}` : "",
+  ].filter((time) => time !== "")
+  console.log(timeArray)
+
+  return seperateJoin(timeArray.slice(0, units))
+}
+
+export function humanReadableTimeDiff(start: Date, end: Date, units: number = 3) {
+  const diff = secondsDiff(start, end)
+  return humanReadableTime(diff, units)
+}

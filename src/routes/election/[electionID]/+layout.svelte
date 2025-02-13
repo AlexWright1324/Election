@@ -1,16 +1,8 @@
 <script lang="ts">
-  import Tabs from "$lib/components/tabs/Tabs.svelte"
   import TabItem from "$lib/components/tabs/TabItem.svelte"
-  import type { PageData } from "./$types"
-  import type { Snippet } from "svelte"
+  import Tabs from "$lib/components/tabs/Tabs.svelte"
 
-  let {
-    data,
-    children,
-  }: {
-    data: PageData
-    children: Snippet
-  } = $props()
+  let { data, children } = $props()
 </script>
 
 {#if data.election.admins.some((admin) => admin.userID === data.session?.user.userID)}
@@ -23,4 +15,4 @@
   </Tabs>
 {/if}
 
-{@render children?.()}
+{@render children()}

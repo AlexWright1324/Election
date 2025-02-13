@@ -1,0 +1,34 @@
+model Voter {
+  user     User     @relation(fields: [userID], references: [userID], onDelete: Cascade)
+  election Election @relation(fields: [electionID], references: [id], onDelete: Cascade)
+
+  userID     String
+  electionID String
+
+  // Cannot link with Ballot/Vote due to traceability
+  @@unique([userID, electionID])
+}
+
+model Ballot {
+  id        Int      @id @default(autoincrement())
+  election  Election @relation(fields: [electionID], references: [id], onDelete: Cascade)
+  signature String   @default(cuid(2))
+
+  electionID String
+
+  votes Vote[]
+}
+
+model Vote {
+  ballot    Ballot    @relation(fields: [ballotID], references: [id], onDelete: Cascade)
+  role      Role      @relation(fields: [roleID], references: [id], onDelete: Cascade)
+  candidate Candidate @relation(references: [id], fields: [candidateID], onDelete: Cascade)
+  position  Int
+
+  roleID      Int
+  ballotID    Int
+  candidateID String
+
+  // Only one vote per role per ballot
+  @@unique([ballotID, roleID])
+}

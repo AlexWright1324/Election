@@ -9,7 +9,11 @@
   } = $props()
 </script>
 
-<CustomModal header="Delete {name}" text="Are you sure you want to delete this {name}?" triggerBase="preset-filled-error-400-600">
+<CustomModal
+  header="Delete {name}"
+  text="Are you sure you want to delete this {name}?"
+  triggerBase="preset-filled-error-400-600"
+>
   {#snippet trigger()}
     Delete {name}
   {/snippet}

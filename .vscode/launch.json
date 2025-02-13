@@ -1,13 +1,13 @@
 {
-	"version": "0.2.0",
-	"configurations": [
-		{
-			"name": "Launch Sveltekit",
-			"type": "bun",
-			"request": "launch",
-			"program": "run",
-			"args": ["dev", "--host"],
-			"cwd": "${workspaceFolder}"
-		}
-	]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch Sveltekit",
+      "type": "bun",
+      "request": "launch",
+      "program": "run",
+      "args": ["dev", "--host"],
+      "cwd": "${workspaceFolder}"
+    }
+  ]
 }

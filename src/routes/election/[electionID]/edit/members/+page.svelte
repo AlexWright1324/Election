@@ -1,30 +1,39 @@
 <script lang="ts">
-  import { superForm, type FormResult } from "sveltekit-superforms"
+  import { superForm } from "$lib/client/superform"
+  import { TextField } from "$lib/components/forms"
+
   import type { ActionData } from "./$types"
+  import "./schema"
+  import { updateApiKeySchema, updateMembersSchema } from "./schema"
+  import { getContext } from "svelte"
+  import { type FormResult } from "sveltekit-superforms"
+  import { zodClient } from "sveltekit-superforms/adapters"
+
   let { data } = $props()
 
+  const updateApiKeySuperform = superForm(getContext("toast"), data.updateApiKeyForm, {
+    resetForm: false,
+    validators: zodClient(updateApiKeySchema),
+  })
+
   const {
-    form: updateApiKeyForm,
     enhance: updateApiKeyFormEnhance,
-    message: updateApiKeyMessage,
-    errors: updateApiKeyErrors,
     isTainted: updateApiKeyIsTainted,
     tainted: updateApiKeyTainted,
-  } = superForm(data.updateApiKeyForm, {
-    resetForm: false,
-  })
+  } = updateApiKeySuperform
 
   const {
     form: updateMembersForm,
     enhance: updateMembersEnhance,
     isTainted: updateMembersIsTainted,
     tainted: updateMembersTainted,
-  } = superForm(data.updateMembersForm, {
+  } = superForm(getContext("toast"), data.updateMembersForm, {
     dataType: "json",
     resetForm: false,
+    validators: zodClient(updateMembersSchema),
   })
 
-  const { enhance: populateMembersEnhance, errors: populateMembersErrors } = superForm(data.populateMembersForm, {
+  const { enhance: populateMembersEnhance } = superForm(getContext("toast"), data.populateMembersForm, {
     onUpdate({ form, result, cancel }) {
       const action = result.data as FormResult<ActionData>
       if (!form.valid || !Array.isArray(action.APIMembers)) return
@@ -42,12 +51,6 @@
       })
       cancel()
     },
-  })
-
-  $effect(() => {
-    if ($populateMembersErrors._errors) {
-      $updateApiKeyErrors.apiKey = $populateMembersErrors._errors
-    }
   })
 
   const addMember = () => {
@@ -69,18 +72,7 @@
 </script>
 
 <form class="flex flex-col gap-2" action="?/updateApiKey" method="post" use:updateApiKeyFormEnhance>
-  <label class="label">
-    <div class="flex gap-2 label-text">
-      <span>API Key</span>
-      {#if $updateApiKeyMessage}
-        <span class="text-primary-500">✅ {$updateApiKeyMessage}</span>
-      {/if}
-      {#if $updateApiKeyErrors.apiKey}
-        <span class="text-error-500">⚠️ {$updateApiKeyErrors.apiKey}</span>
-      {/if}
-    </div>
-    <input class="input" type="text" name="apiKey" bind:value={$updateApiKeyForm.apiKey} />
-  </label>
+  <TextField superform={updateApiKeySuperform} field="apiKey" name="API Key" />
   <button class="btn preset-filled-primary-500" type="submit" disabled={!updateApiKeyIsTainted($updateApiKeyTainted)}>
     Update API Key
   </button>

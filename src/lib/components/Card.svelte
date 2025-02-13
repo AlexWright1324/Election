@@ -34,11 +34,11 @@
   a {
     @apply block max-w-md overflow-hidden;
     @apply card-hover;
-    @apply preset-filled-surface-900-100 border-[1px] border-surface-800-200 divide-y divide-surface-800-200;
+    @apply divide-y border-[1px] border-surface-800-200 divide-surface-800-200 preset-filled-surface-900-100;
   }
   header {
     > img {
-      @apply w-full aspect-[16/9] object-cover;
+      @apply aspect-[16/9] w-full object-cover;
     }
   }
   article {

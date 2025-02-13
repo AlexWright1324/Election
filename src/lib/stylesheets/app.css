@@ -24,8 +24,8 @@ html.dark .shiki span {
   @apply card preset-outlined-surface-200-800;
 
   .carta-toolbar {
-    @apply h-auto min-w-0 w-full max-w-full !important;
-    @apply p-2 border-b-surface-200-800 border-b-[1px];
+    @apply h-auto w-full min-w-0 max-w-full !important;
+    @apply border-b-[1px] p-2 border-b-surface-200-800;
 
     .carta-toolbar-left {
       @apply gap-2;
@@ -61,11 +61,11 @@ html.dark .shiki span {
   }
 
   .carta-wrapper {
-    @apply p-2 flex-grow;
+    @apply flex-grow p-2;
   }
 
   .carta-input {
-    @apply min-h-[300px] max-h-[300px] overflow-auto;
+    @apply max-h-[300px] min-h-[300px] overflow-auto;
   }
 
   .carta-font-code {

@@ -31,9 +31,9 @@
 
 <style lang="postcss">
   header {
-    @apply w-full p-4 py-3 bg-surface-950-50 border-surface-500/20 border-b-[1px];
+    @apply w-full border-b-[1px] border-surface-500/20 p-4 py-3 bg-surface-950-50;
     > div {
-      @apply max-w-screen-2xl mx-auto flex flex-wrap justify-between gap-4 items-center;
+      @apply mx-auto flex max-w-screen-2xl flex-wrap items-center justify-between gap-4;
       > nav,
       > div {
         @apply flex items-center gap-3;

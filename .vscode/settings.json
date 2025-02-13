@@ -1,9 +1,13 @@
 {
-    "editor.quickSuggestions": {
-        "strings": "on"
-    },
-    "files.associations": {
-        "*.css": "tailwindcss"
-    },
-    "editor.tabSize": 2
+  "editor.quickSuggestions": {
+    "strings": "on"
+  },
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "editor.tabSize": 2,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[svg]": {
+    "editor.defaultFormatter": "jock.svg"
   }
+}

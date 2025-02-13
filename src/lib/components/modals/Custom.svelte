@@ -19,7 +19,12 @@
   } = $props()
 </script>
 
-<Modal triggerBase={trigger ? "btn " + triggerBase : "hidden"} contentBase="card bg-surface-100-900 shadow-xl max-w-sm w-full p-4" {trigger} bind:open>
+<Modal
+  triggerBase={trigger ? "btn " + triggerBase : "hidden"}
+  contentBase="card bg-surface-100-900 shadow-xl max-w-sm w-full p-4"
+  {trigger}
+  bind:open
+>
   {#snippet content()}
     <header class="flex justify-between">
       <h2 class="h2">{header}</h2>

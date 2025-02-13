@@ -1,43 +1,43 @@
-import { redirect } from "@sveltejs/kit"
-
+import { requireElectionAdmin } from "$lib/server/auth"
 import { PrismaClient } from "$lib/server/db"
 import { deleteElection } from "$lib/server/election"
-import { storeElectionCoverImage, zImage } from "$lib/server/store"
+import { storeElectionCoverImage } from "$lib/server/store"
 
-import { message, superValidate, fail } from "sveltekit-superforms"
+import { updateSchema } from "./schema"
+import { redirect } from "@sveltejs/kit"
+import { message, superValidate, fail, setError } from "sveltekit-superforms"
 import { zod } from "sveltekit-superforms/adapters"
-import { z } from "zod"
-import { requireElectionAdmin } from "$lib/server/auth"
 
-const updateSchema = z.object({
-  name: z.string(),
-  description: z.string(),
-  start: z.date().nullable(),
-  end: z.date().nullable(),
-  candidateStart: z.date().nullable(),
-  candidateEnd: z.date().nullable(),
-  published: z.boolean(),
-  image: zImage,
-  candidateDefaultDescription: z.string(),
-  candidateMaxDescription: z.number(),
-  candidateMaxUsers: z.number(),
-  motionEnabled: z.boolean(),
-  motionDefaultDescription: z.string(),
-  motionMaxDescription: z.number(),
-  motionMaxSeconders: z.number(),
-})
-
-export const load = async ({ parent }) => {
-  const { election } = await parent()
-
-  return {
-    updateForm: await superValidate(election, zod(updateSchema)),
-  }
-}
+export const load = requireElectionAdmin(
+  {
+    name: true,
+    description: true,
+    start: true,
+    end: true,
+    signUpEnd: true,
+    published: true,
+    candidateDefaultDescription: true,
+    candidateMaxDescription: true,
+    candidateMaxUsers: true,
+    motionEnabled: true,
+    motionDefaultDescription: true,
+    motionMaxDescription: true,
+    motionMaxSeconders: true,
+  },
+  async ({ election }) => {
+    return {
+      updateForm: await superValidate(election, zod(updateSchema), {
+        errors: true,
+      }),
+    }
+  },
+)
 
 export const actions = {
   update: requireElectionAdmin({ id: true }, async ({ request, election }) => {
-    const form = await superValidate(request, zod(updateSchema))
+    const form = await superValidate(request, zod(updateSchema), {
+      strict: true,
+    })
 
     if (!form.valid) {
       return fail(400, { form })
@@ -52,8 +52,7 @@ export const actions = {
         description: form.data.description,
         start: form.data.start,
         end: form.data.end,
-        candidateStart: form.data.candidateStart,
-        candidateEnd: form.data.candidateEnd,
+        signUpEnd: form.data.signUpEnd,
         published: form.data.published,
         candidateDefaultDescription: form.data.candidateDefaultDescription,
         candidateMaxDescription: form.data.candidateMaxDescription,
@@ -67,7 +66,7 @@ export const actions = {
 
     if (form.data.image) {
       await storeElectionCoverImage(election.id, form.data.image).catch(() => {
-        return fail(500, { message: "Failed to upload image" })
+        return setError(form, "image", "Failed to store image")
       })
     }
 

@@ -1,10 +1,9 @@
-import type { RequestHandler } from "./$types"
-
 import PlaceHolderImage from "$lib/images/placeholder.png"
-
-import { join, parse } from "node:path"
-import { error, redirect } from "@sveltejs/kit"
 import { storePath } from "$lib/server/store"
+
+import type { RequestHandler } from "./$types"
+import { error, redirect } from "@sveltejs/kit"
+import { join, parse } from "node:path"
 
 export const GET: RequestHandler = async ({ params }) => {
   const filePath = join(storePath, params.path)

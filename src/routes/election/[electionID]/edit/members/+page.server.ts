@@ -2,26 +2,9 @@ import { requireElectionAdmin } from "$lib/server/auth"
 import { PrismaClient } from "$lib/server/db"
 import { getMembers } from "$lib/server/suapi"
 
+import { emptySchema, updateApiKeySchema, updateMembersSchema } from "./schema"
 import { fail, message, setError, superValidate } from "sveltekit-superforms"
 import { zod } from "sveltekit-superforms/adapters"
-import { z } from "zod"
-
-const updateApiKeySchema = z.object({
-  apiKey: z.string().refine((apiKey) => apiKey.length === 36, {
-    message: "API Key must be 36 characters long",
-  }),
-})
-
-const emptySchema = z.object({})
-
-const updateMembersSchema = z.object({
-  members: z.array(
-    z.object({
-      userID: z.string(),
-      name: z.string(),
-    }),
-  ),
-})
 
 export const load = requireElectionAdmin(
   {
@@ -36,8 +19,8 @@ export const load = requireElectionAdmin(
   async ({ election }) => {
     return {
       updateApiKeyForm: await superValidate({ apiKey: election.apiKey }, zod(updateApiKeySchema)),
-      populateMembersForm: await superValidate(zod(emptySchema)),
       updateMembersForm: await superValidate({ members: election.members }, zod(updateMembersSchema)),
+      populateMembersForm: await superValidate(zod(emptySchema)),
     }
   },
 )
@@ -82,20 +65,18 @@ export const actions = {
       return fail(400, { form })
     }
 
-    const memberConnections = form.data.members.map((member) => ({
-      where: { userID: member.userID },
-      create: {
-        userID: member.userID,
-        name: member.name, // TODO: Validate name
-      },
-    }))
-
     await PrismaClient.election.update({
       where: { id: election.id },
       data: {
         members: {
           set: [],
-          connectOrCreate: memberConnections,
+          connectOrCreate: form.data.members.map((member) => ({
+            where: { userID: member.userID },
+            create: {
+              userID: member.userID,
+              name: member.name, // TODO: Validate name
+            },
+          })),
         },
       },
     })

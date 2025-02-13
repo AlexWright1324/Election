@@ -1,5 +1,6 @@
 <script lang="ts">
   import { seperateJoin } from "$lib/client/separate"
+
   import { onMount } from "svelte"
   import { flip } from "svelte/animate"
 
@@ -21,8 +22,8 @@
     value = $bindable([]),
     ron = false,
   }: {
-    candidates: { id: number; users: { name: string }[] }[]
-    value: { id: number }[]
+    candidates: { id: string | number; users: { name: string }[] }[]
+    value: { id: string | number }[]
     ron: boolean
   } = $props()
 

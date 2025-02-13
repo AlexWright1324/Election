@@ -1,5 +1,6 @@
 import { requireElection } from "$lib/server/auth"
-import { isElectionAdmin } from "$lib/server/election"
+
+import { error } from "@sveltejs/kit"
 
 export const load = requireElection(
   {
@@ -7,6 +8,9 @@ export const load = requireElection(
     name: true,
     description: true,
     motionEnabled: true,
+    published: true,
+    start: true,
+    end: true,
     motions: {
       select: {
         id: true,
@@ -41,5 +45,5 @@ export const load = requireElection(
     return {
       election,
     }
-  }
+  },
 )

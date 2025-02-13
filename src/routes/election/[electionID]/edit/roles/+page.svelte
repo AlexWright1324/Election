@@ -1,18 +1,20 @@
 <script lang="ts">
-  import UnsavedModal from "$lib/components/modals/Unsaved.svelte"
+  import UnsavedModal, { taintedMessage } from "$lib/components/modals/Unsaved.svelte"
+
+  import { NumberField, TextField } from "$lib/components/forms/index"
 
   import { superForm } from "sveltekit-superforms"
 
   let { data } = $props()
 
-  const { form, enhance, isTainted, tainted } = superForm(data.editRolesForm, {
+  const superform = superForm(data.editRolesForm, {
     dataType: "json",
     resetForm: false,
-    taintedMessage: () => unsavedModal.taintedMessage(),
+    taintedMessage,
+    invalidateAll: true,
   })
 
-  let unsavedModal: UnsavedModal
-  let unsaved = $derived(isTainted($tainted))
+  const { form, enhance, isTainted, tainted } = superform
 
   const addRole = () => {
     $form.roles = [
@@ -30,25 +32,19 @@
   }
 </script>
 
-<UnsavedModal bind:this={unsavedModal} />
+<UnsavedModal />
 
 <form method="post" action="?/editRoles" use:enhance>
   <div class="flex flex-wrap gap-2">
     <button type="button" class="btn preset-tonal-primary mb-2" onclick={addRole}>Add Role</button>
-    <button type="submit" class="btn preset-filled-primary-500" disabled={!unsaved}>Save</button>
+    <button type="submit" class="btn preset-filled-primary-500" disabled={!isTainted($tainted)}>Save</button>
   </div>
   <ul>
     {#each $form.roles as role, index}
       <li class="flex gap-2 justify-center items-end">
         <input type="hidden" name="id" bind:value={role.id} />
-        <label class="label">
-          <span class="label-text">Role Name</span>
-          <input class="input" type="text" name="name" bind:value={role.name} />
-        </label>
-        <label class="label">
-          <span class="label-text">Seats to Fill</span>
-          <input class="input" type="number" name="seatsToFill" min="1" bind:value={role.seatsToFill} />
-        </label>
+        <TextField {superform} field="roles[{index}].name" name="Role Name" />
+        <NumberField {superform} field="roles[{index}].seatsToFill" name="Seats to Fill" />
         <button type="button" class="btn preset-filled-error-500" onclick={() => removeRole(index)}>Remove</button>
       </li>
     {/each}

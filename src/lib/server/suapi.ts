@@ -36,20 +36,21 @@ export const getMembers = async (apiKey: string) => {
         }
         break
       }
-      case "text": {
-        switch (element) {
-          case "<FirstName>":
-            member.name = value
-            break
-          case "<LastName>":
-            member.name += ` ${value}`
-            break
-          case "<UniqueID>":
-            member.userID = value
-            break
+      case "text":
+        {
+          switch (element) {
+            case "<FirstName>":
+              member.name = value
+              break
+            case "<LastName>":
+              member.name += ` ${value}`
+              break
+            case "<UniqueID>":
+              member.userID = value
+              break
+          }
         }
-      }
-      break
+        break
     }
   }
 
