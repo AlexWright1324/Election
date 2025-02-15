@@ -20,13 +20,15 @@
     src: string
   } & HTMLInputAttributes = $props()
 
-  const { value, errors, constraints } = formFieldProxy(superform, field)
+  const { errors, constraints } = formFieldProxy(superform, field)
   const file = fileProxy(superform, field)
 </script>
 
 <label class="label max-w-xs">
   <Label {name} errors={$errors} />
-  <img class="p-4 preset-outlined-primary-200-800" {src} alt={name} />
+  <div class="preset-outlined-primary-200-800 max-w-96 max-h-96 aspect-square p-2 rounded">
+    <img class="banner-image" {src} alt={name} />
+  </div>
   <input
     class="input"
     name="image"

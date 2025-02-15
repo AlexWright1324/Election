@@ -12,14 +12,9 @@
 
   let { data } = $props()
 
-  let coverImgSrc = $state(getElectionCoverImage(data.election.id))
-
   const superform = superForm(getContext("toast"), data.updateForm, {
     resetForm: false,
     validators: zodClient(updateSchema),
-    onUpdated: () => {
-      coverImgSrc = getElectionCoverImage(data.election.id)
-    },
     taintedMessage,
   })
 
@@ -44,9 +39,17 @@
     enctype="multipart/form-data"
     use:enhance
   >
-    <SwitchField {superform} field="published" name="Published" />
+    <div class="flex flex-wrap [&>*]:max-w-40">
+      <SwitchField {superform} field="membersOnly" name="Members Only" />
+      <SwitchField {superform} field="published" name="Published" />
+    </div>
     <TextField {superform} field="name" name="Title" />
-    <ImageField {superform} field="image" name="Banner Image" src={coverImgSrc} />
+    <ImageField
+      {superform}
+      field="image"
+      name="Banner Image"
+      src={getElectionCoverImage(data.election.id, data.election.imageVersion)}
+    />
     <DateTimeField {superform} field="signUpEnd" name="Sign-up End Date" />
     <DateTimeField {superform} field="start" name="Start Date" />
     <DateTimeField {superform} field="end" name="End Date" />

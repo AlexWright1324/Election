@@ -16,6 +16,8 @@ export const load = requireElectionAdmin(
     end: true,
     signUpEnd: true,
     published: true,
+    membersOnly: true,
+    imageVersion: true,
     candidateDefaultDescription: true,
     candidateMaxDescription: true,
     candidateMaxUsers: true,
@@ -26,21 +28,27 @@ export const load = requireElectionAdmin(
   },
   async ({ election }) => {
     return {
-      updateForm: await superValidate(election, zod(updateSchema), {
-        errors: true,
-      }),
+      updateForm: await superValidate(election, zod(updateSchema)),
     }
   },
 )
 
 export const actions = {
-  update: requireElectionAdmin({ id: true }, async ({ request, election }) => {
+  update: requireElectionAdmin({ id: true, imageVersion: true }, async ({ request, election }) => {
     const form = await superValidate(request, zod(updateSchema), {
       strict: true,
     })
 
     if (!form.valid) {
       return fail(400, { form })
+    }
+
+    let imageProcessed = null
+    if (form.data.image) {
+      await storeElectionCoverImage(election.id, form.data.image).catch(() => {
+        imageProcessed = false
+      })
+      imageProcessed = true
     }
 
     await PrismaClient.election.update({
@@ -54,6 +62,7 @@ export const actions = {
         end: form.data.end,
         signUpEnd: form.data.signUpEnd,
         published: form.data.published,
+        membersOnly: form.data.membersOnly,
         candidateDefaultDescription: form.data.candidateDefaultDescription,
         candidateMaxDescription: form.data.candidateMaxDescription,
         candidateMaxUsers: form.data.candidateMaxUsers,
@@ -61,13 +70,12 @@ export const actions = {
         motionEnabled: form.data.motionEnabled,
         motionMaxDescription: form.data.motionMaxDescription,
         motionMaxSeconders: form.data.motionMaxSeconders,
+        imageVersion: election.imageVersion + (imageProcessed ? 1 : 0),
       },
     })
 
-    if (form.data.image) {
-      await storeElectionCoverImage(election.id, form.data.image).catch(() => {
-        return setError(form, "image", "Failed to store image")
-      })
+    if (imageProcessed === false) {
+      return setError(form, "image", "Failed to store image")
     }
 
     return message(form, "Updated")

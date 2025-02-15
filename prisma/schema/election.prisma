@@ -1,8 +1,9 @@
 model Election {
-  id          String  @id @default(nanoid(8))
-  name        String  @default("New Election")
-  description String  @default("Sample Description")
-  published   Boolean @default(false)
+  id           String  @id @default(nanoid(8))
+  name         String  @default("New Election")
+  description  String  @default("Sample Description")
+  published    Boolean @default(false)
+  imageVersion Int     @default(0)
 
   // Timing
   start     DateTime?
@@ -28,11 +29,11 @@ model Election {
   // Results
   resultsPublished Boolean @default(false)
 
-  admins     User[]
-  roles      Role[]
-  voters     Voter[]
-  ballots    Ballot[]
-  motions    Motion[]
+  admins  User[]
+  roles   Role[]
+  voters  Voter[]
+  ballots Ballot[]
+  motions Motion[]
 }
 
 model Role {
@@ -48,14 +49,16 @@ model Role {
 }
 
 model Candidate {
-  id          String   @id @default(nanoid(8))
-  description String
-  role        Role     @relation(fields: [roleID], references: [id], onDelete: Cascade)
+  id           String @id @default(nanoid(8))
+  description  String
+  imageVersion Int    @default(0)
+  role         Role   @relation(fields: [roleID], references: [id], onDelete: Cascade)
+
   users       User[]
-  userInvites User[]   @relation("CandidateUserInvites")
+  userInvites User[] @relation("CandidateUserInvites")
   votes       Vote[]
 
-  roleID     Int
+  roleID Int
 }
 
 model Motion {

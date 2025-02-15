@@ -1,7 +1,7 @@
 import type { Theme } from "@skeletonlabs/skeleton/themes"
 
-const custom = {
-  name: "custom",
+const theme = {
+  name: "theme",
   properties: {
     "--type-scale-factor": "1.067",
     "--type-scale-1": "calc(0.75rem * var(--type-scale-factor))",
@@ -19,7 +19,7 @@ const custom = {
     "--type-scale-13": "calc(8rem * var(--type-scale-factor))",
     "--base-font-color": "var(--color-surface-950)",
     "--base-font-color-dark": "var(--color-surface-50)",
-    "--base-font-family": "Inter, Roboto, Helvetica Neue, Arial Nova, Nimbus Sans, Arial, sans-serif",
+    "--base-font-family": "system-ui",
     "--base-font-size": "inherit",
     "--base-line-height": "inherit",
     "--base-font-weight": "normal",
@@ -196,16 +196,16 @@ const custom = {
     "--color-error-contrast-800": "var(--color-error-contrast-light)",
     "--color-error-contrast-900": "var(--color-error-contrast-light)",
     "--color-error-contrast-950": "var(--color-error-contrast-light)",
-    "--color-surface-50": "253 253 253",
-    "--color-surface-100": "224 224 224",
-    "--color-surface-200": "194 194 194",
-    "--color-surface-300": "163 163 163",
-    "--color-surface-400": "133 133 133",
-    "--color-surface-500": "102 102 102",
-    "--color-surface-600": "85 85 85",
-    "--color-surface-700": "68 68 68",
-    "--color-surface-800": "51 51 51",
-    "--color-surface-900": "34 34 34",
+    "--color-surface-50": "230 227 252",
+    "--color-surface-100": "196 193 222",
+    "--color-surface-200": "162 158 193",
+    "--color-surface-300": "129 124 163",
+    "--color-surface-400": "95 89 134",
+    "--color-surface-500": "61 55 104",
+    "--color-surface-600": "52 47 87",
+    "--color-surface-700": "43 40 69",
+    "--color-surface-800": "35 32 52",
+    "--color-surface-900": "26 25 34",
     "--color-surface-950": "17 17 17",
     "--color-surface-contrast-dark": "var(--color-surface-950)",
     "--color-surface-contrast-light": "var(--color-surface-50)",
@@ -226,4 +226,4 @@ const custom = {
   },
 } satisfies Theme
 
-export default custom
+export default theme

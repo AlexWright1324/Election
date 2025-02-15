@@ -33,7 +33,6 @@ function humanReadableTime(startingSeconds: number, units: number = 1) {
     minutes ? `${minutes} ${pluralise(minutes, "minute")}` : "",
     seconds ? `${seconds} ${pluralise(seconds, "second")}` : "",
   ].filter((time) => time !== "")
-  console.log(timeArray)
 
   return seperateJoin(timeArray.slice(0, units))
 }

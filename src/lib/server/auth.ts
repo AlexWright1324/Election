@@ -97,14 +97,24 @@ export const requireElection = <T extends LoadOrAction, S extends Prisma.Electio
 
     const electionExists = await PrismaClient.election.findUnique({
       where: { id: electionID },
-      select: { published: true, admins: { select: { userID: true } } },
+      select: {
+        published: true,
+        membersOnly: true,
+        admins: { select: { userID: true } },
+        _count: { select: { members: { where: { userID: event.locals.session?.user.userID } } } },
+      },
     })
 
     if (!electionExists) return handleFailure(event, 404, "Election not found")
 
-    if (!electionExists.published) {
-      const isAdmin = electionExists.admins.some((admin) => admin.userID === event.locals.session?.user.userID)
-      if (!isAdmin) return handleFailure(event, 403, "Election not published")
+    const isAdmin = electionExists.admins.some((admin) => admin.userID === event.locals.session?.user.userID)
+    if (!isAdmin) {
+      if (!electionExists.published) {
+        return handleFailure(event, 403, "Election not published")
+      }
+      if (!electionExists.membersOnly && electionExists._count.members === 0) {
+        return handleFailure(event, 403, "Election is members only")
+      }
     }
 
     const election = await PrismaClient.election.findUnique({
@@ -140,7 +150,7 @@ export function requireElectionAdmin<T extends LoadOrAction, S extends Prisma.El
       select,
     })
 
-    if (!election) return handleFailure(event, 403, "Not an election admin")
+    if (!election) return handleFailure(event, 403, "You are not an admin of this election")
 
     return handler({ ...event, election })
   })
@@ -162,6 +172,8 @@ export const requireCandidate = <T extends LoadOrAction, S extends Prisma.Candid
     })
 
     if (!candidate) return handleFailure(event, 404, "Candidate not found")
+
+    // Able to view election
 
     return handler({ ...event, candidate })
   }

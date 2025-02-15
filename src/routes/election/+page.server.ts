@@ -9,17 +9,22 @@ import { zod } from "sveltekit-superforms/adapters"
 export const load = async ({ parent }) => {
   const { session } = await parent()
 
+  const select: Prisma.ElectionSelect = {
+    id: true,
+    name: true,
+    start: true,
+    end: true,
+    signUpEnd: true,
+    published: true,
+    imageVersion: true,
+    membersOnly: true,
+  }
+
   const elections = await PrismaClient.election.findMany({
     where: {
       published: true,
     },
-    select: {
-      id: true,
-      name: true,
-      start: true,
-      end: true,
-      signUpEnd: true,
-    },
+    select,
   })
 
   const managedElections = session?.user.userID
@@ -31,6 +36,7 @@ export const load = async ({ parent }) => {
             },
           },
         },
+        select,
       })
     : []
 

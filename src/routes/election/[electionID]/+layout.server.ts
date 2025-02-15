@@ -11,6 +11,9 @@ export const load = requireElection(
     published: true,
     start: true,
     end: true,
+    signUpEnd: true,
+    membersOnly: true,
+    imageVersion: true,
     motions: {
       select: {
         id: true,

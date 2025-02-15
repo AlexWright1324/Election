@@ -28,6 +28,7 @@
     name={field}
     type="number"
     aria-invalid={$errors ? "true" : undefined}
+    placeholder="Enter a number..."
     bind:value={$value}
     {...$constraints}
     {...restProps}

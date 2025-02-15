@@ -1,4 +1,4 @@
-import custom from "./src/lib/stylesheets/theme"
+import theme from "./src/lib/stylesheets/theme"
 import { skeleton, contentPath } from "@skeletonlabs/skeleton/plugin"
 import forms from "@tailwindcss/forms"
 import typography from "@tailwindcss/typography"
@@ -9,13 +9,12 @@ export default {
   theme: {
     extend: {},
   },
-  darkMode: "class",
   plugins: [
     forms,
     typography,
     skeleton({
       // NOTE: each theme included will increase the size of your CSS bundle
-      themes: [custom],
+      themes: [theme],
     }),
   ],
 } satisfies Config

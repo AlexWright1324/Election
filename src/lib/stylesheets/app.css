@@ -11,6 +11,12 @@ body {
   @apply grid grid-rows-[auto_1fr_auto];
 }
 
+@layer components {
+  .banner-image {
+    @apply max-h-full w-full rounded object-contain;
+  }
+}
+
 /* Carta */
 
 /* Code dark mode */

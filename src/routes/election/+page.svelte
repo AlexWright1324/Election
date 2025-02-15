@@ -2,9 +2,11 @@
   import { date, humanReadableTimeDiff } from "$lib/client/time.svelte"
   import Card from "$lib/components/Card.svelte"
 
+  import { route } from "$lib/ROUTES"
   import { getElectionCoverImage } from "$lib/client/store"
   import { superForm } from "$lib/client/superform"
 
+  import ElectionInfo from "./ElectionInfo.svelte"
   import { getContext } from "svelte"
 
   let { data } = $props()
@@ -19,46 +21,29 @@
 </form>
 
 {#snippet ElectionCard(election: (typeof data.elections)[0])}
-  <Card href="/election/{election.id}" image={getElectionCoverImage(election.id)}>
-    <h3 class="h3">{election.name}</h3>
-    {#snippet footer()}
-      <div>
-        {#if election.start && election.end && election.signUpEnd}
-          {#if date.now < election.signUpEnd}
-            <p>
-              Sign-ups end in {humanReadableTimeDiff(date.now, election.signUpEnd)}
-            </p>
-          {/if}
-          {#if election.start > date.now}
-            <p>
-              Election starts in {humanReadableTimeDiff(date.now, election.start)}
-            </p>
-          {:else if election.end > date.now}
-            <p>
-              Voting is open! Election ends in {humanReadableTimeDiff(date.now, election.end)}
-            </p>
-          {:else}
-            <p>Election is over</p>
-          {/if}
-        {/if}
-      </div>
-    {/snippet}
-  </Card>
+  <a
+    class={`flex flex-wrap min-w-0 p-2 gap-4 rounded border-surface-800 border-2
+    hover:scale-[1.01] transition-all`}
+    href={route("/election/[electionID]", { electionID: election.id })}
+  >
+    <ElectionInfo {election} />
+  </a>
+{/snippet}
+
+{#snippet Elections(elections: typeof data.elections)}
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 p-2">
+    {#each elections as election}
+      {@render ElectionCard(election)}
+    {:else}
+      <p>No elections found</p>
+    {/each}
+  </div>
 {/snippet}
 
 {#if data.managedElections.length > 0}
   <h2 class="h2">Your Elections</h2>
-  <div class="flex gap-2">
-    {#each data.managedElections as election}
-      {@render ElectionCard(election)}
-    {/each}
-  </div>
+  {@render Elections(data.managedElections)}
 {/if}
 
 <h1 class="h1">Elections</h1>
-
-<div class="flex gap-2">
-  {#each data.elections as election}
-    {@render ElectionCard(election)}
-  {/each}
-</div>
+{@render Elections(data.elections)}

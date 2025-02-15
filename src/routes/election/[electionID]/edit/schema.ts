@@ -18,6 +18,7 @@ export const updateSchema = z
     motionDefaultDescription: z.string().optional(),
     motionMaxDescription: z.number().min(0).optional(),
     motionMaxSeconders: z.number().min(1).optional(),
+    membersOnly: z.boolean(),
   })
   .superRefine((data, ctx) => {
     // Start, sign-up and end dates must be set at the same time

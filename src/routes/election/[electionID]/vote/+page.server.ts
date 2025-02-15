@@ -1,3 +1,5 @@
+import { requireElection } from "$lib/server/auth"
+
 import { superValidate } from "sveltekit-superforms"
 import { zod } from "sveltekit-superforms/adapters"
 import { z } from "zod"
@@ -21,10 +23,17 @@ const voteSchema = z.object({
     .array(),
 })
 
-export const load = async ({ parent }) => {
-  // TODO: Check if able to vote
+export const load = requireElection(
+  {
+    membersOnly: true,
+  },
+  async () => {
+    // TODO: Check if able to vote
 
-  return {
-    voteForm: await superValidate(zod(voteSchema)),
-  }
-}
+    // Within vote
+
+    return {
+      voteForm: await superValidate(zod(voteSchema)),
+    }
+  },
+)
