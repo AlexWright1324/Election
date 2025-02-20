@@ -7,6 +7,7 @@
   import { DateTimeField, ImageField, MarkdownField, NumberField, SwitchField, TextField } from "$lib/components/forms"
 
   import { updateSchema } from "./schema"
+
   import { getContext } from "svelte"
   import { zodClient } from "sveltekit-superforms/adapters"
 
@@ -23,49 +24,81 @@
 
 <UnsavedModal />
 
-<div class="flex flex-wrap gap-2">
+<div class="flex flex-wrap gap-2 p-2">
   <button form="update" type="submit" class="btn preset-filled-primary-500" disabled={!isTainted($tainted)}>
     Update Election
   </button>
   <DeleteModal name="Election" />
 </div>
 
-<div class="flex flex-wrap gap-4">
-  <form
-    class="gap-4 basis-64 grow"
-    id="update"
-    method="post"
-    action="?/update"
-    enctype="multipart/form-data"
-    use:enhance
-  >
-    <div class="flex flex-wrap [&>*]:max-w-40">
-      <SwitchField {superform} field="membersOnly" name="Members Only" />
-      <SwitchField {superform} field="published" name="Published" />
-    </div>
-    <TextField {superform} field="name" name="Title" />
+<form
+  class="flex flex-wrap gap-x-4"
+  id="update"
+  method="post"
+  action="?/update"
+  enctype="multipart/form-data"
+  use:enhance
+>
+  <aside class="w-full lg:w-96">
+    <h3 class="h3">Settings</h3>
+    <SwitchField {superform} field="published" name="Publish Election">
+      {#snippet enabledText()}
+        This election is published and visible to everyone.
+      {/snippet}
+      {#snippet disabledText()}
+        This election is not published and is only visible to admins.
+      {/snippet}
+    </SwitchField>
+    <SwitchField {superform} field="membersOnly" name="Members Only">
+      {#snippet enabledText()}
+        Only members can vote in this election.
+      {/snippet}
+      {#snippet disabledText()}
+        Everyone can vote in this election.
+      {/snippet}
+    </SwitchField>
+    <SwitchField {superform} field="ronEnabled" name="RON Enabled">
+      {#snippet enabledText()}
+        Re-Open Nominations are enabled.
+      {/snippet}
+      {#snippet disabledText()}
+        Re-Open Nominations are disabled.
+      {/snippet}
+    </SwitchField>
+    <SwitchField {superform} field="motionEnabled" name="Motions Enabled">
+      {#snippet enabledText()}
+        Motions can be created.
+      {/snippet}
+      {#snippet disabledText()}
+        Motions cannot be created.
+      {/snippet}
+    </SwitchField>
     <ImageField
       {superform}
       field="image"
-      name="Banner Image"
+      name="Election Image"
       src={getElectionCoverImage(data.election.id, data.election.imageVersion)}
     />
-    <DateTimeField {superform} field="signUpEnd" name="Sign-up End Date" />
+  </aside>
+  <main class="flex-1">
+    <TextField {superform} field="name" name="Title" />
+    <DateTimeField {superform} field="nominationsStart" name="Nominations Start Date" />
+    <DateTimeField {superform} field="nominationsEnd" name="Nominations End Date" />
     <DateTimeField {superform} field="start" name="Start Date" />
     <DateTimeField {superform} field="end" name="End Date" />
     <MarkdownField {superform} field="description" name="Description" />
 
     <h4 class="h4">Candidate Settings</h4>
+
     <NumberField {superform} field="candidateMaxUsers" name="Max Users in a Candidancy" />
     <NumberField {superform} field="candidateMaxDescription" name="Max Characters in Candidate Description" />
     <MarkdownField {superform} field="candidateDefaultDescription" name="Candidate Default Description" />
 
-    <h4 class="h4">Motion Settings</h4>
-    <SwitchField {superform} field="motionEnabled" name="Motions Enabled" />
     {#if $form.motionEnabled}
+      <h4 class="h4">Motion Settings</h4>
       <NumberField {superform} field="motionMaxDescription" name="Max Characters in Motion Description" />
       <NumberField {superform} field="motionMaxSeconders" name="Max Seconders" />
       <MarkdownField {superform} field="motionDefaultDescription" name="Motion Default Description" />
     {/if}
-  </form>
-</div>
+  </main>
+</form>

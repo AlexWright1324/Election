@@ -16,19 +16,36 @@ model Ballot {
 
   electionID String
 
-  votes Vote[]
+  candidateVotes CandidateVote[]
+  motionVotes MotionVote[]
 }
 
-model Vote {
+model CandidateVote {
   ballot    Ballot    @relation(fields: [ballotID], references: [id], onDelete: Cascade)
-  role      Role      @relation(fields: [roleID], references: [id], onDelete: Cascade)
   candidate Candidate @relation(references: [id], fields: [candidateID], onDelete: Cascade)
   position  Int
 
-  roleID      Int
   ballotID    Int
   candidateID String
 
-  // Only one vote per role per ballot
-  @@unique([ballotID, roleID])
+  // Only one vote per candidate per ballot
+  @@unique([ballotID, candidateID])
+}
+
+model MotionVote {
+  ballot Ballot         @relation(fields: [ballotID], references: [id], onDelete: Cascade)
+  motion Motion         @relation(fields: [motionID], references: [id], onDelete: Cascade)
+  vote   MotionVoteType
+
+  motionID String
+  ballotID Int
+
+  // Only one vote per motion per ballot
+  @@unique([ballotID, motionID])
+}
+
+enum MotionVoteType {
+  FOR
+  AGAINST
+  ABSTAIN
 }

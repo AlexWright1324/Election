@@ -1,12 +1,10 @@
 <script lang="ts">
-  import { date, humanReadableTimeDiff } from "$lib/client/time.svelte"
-  import Card from "$lib/components/Card.svelte"
+  import ElectionInfo from "./ElectionInfo.svelte"
 
   import { route } from "$lib/ROUTES"
   import { getElectionCoverImage } from "$lib/client/store"
   import { superForm } from "$lib/client/superform"
 
-  import ElectionInfo from "./ElectionInfo.svelte"
   import { getContext } from "svelte"
 
   let { data } = $props()
@@ -22,16 +20,22 @@
 
 {#snippet ElectionCard(election: (typeof data.elections)[0])}
   <a
-    class={`flex flex-wrap min-w-0 p-2 gap-4 rounded border-surface-800 border-2
-    hover:scale-[1.01] transition-all`}
+    class={`flex min-w-0 flex-wrap gap-4 rounded border-2 border-surface-800 p-2
+    transition-all hover:scale-[1.01]`}
     href={route("/election/[electionID]", { electionID: election.id })}
   >
-    <ElectionInfo {election} />
+    <div class="banner-image-container w-64">
+      <img class="banner-image" src={getElectionCoverImage(election.id, election.imageVersion)} alt="Election Cover" />
+    </div>
+    <div class="flex flex-col">
+      <h2 class="h2">{election.name}</h2>
+      <ElectionInfo {election} />
+    </div>
   </a>
 {/snippet}
 
 {#snippet Elections(elections: typeof data.elections)}
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 p-2">
+  <div class="grid grid-cols-1 gap-6 p-2 lg:grid-cols-2">
     {#each elections as election}
       {@render ElectionCard(election)}
     {:else}

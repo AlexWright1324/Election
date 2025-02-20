@@ -4,6 +4,7 @@
 
 <script lang="ts" generics="T extends Record<string, unknown>">
   import Label from "./Label.svelte"
+
   import type { HTMLInputAttributes } from "svelte/elements"
   import { formFieldProxy, type SuperForm, type FormPathLeaves, dateProxy } from "sveltekit-superforms"
 
@@ -22,7 +23,7 @@
   const proxyDate = dateProxy(superform, field, { format: "datetime-local" })
 </script>
 
-<label class="label">
+<label class="label pb-2 pt-2">
   <Label {name} errors={$errors} />
   <input
     class="input"

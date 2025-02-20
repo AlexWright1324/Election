@@ -52,7 +52,7 @@ CREATE TABLE "new_Election" (
     "published" BOOLEAN NOT NULL DEFAULT false,
     "start" DATETIME,
     "end" DATETIME,
-    "signUpEnd" DATETIME,
+    "nominationsEnd" DATETIME,
     "membersOnly" BOOLEAN NOT NULL DEFAULT false,
     "apiKey" TEXT NOT NULL DEFAULT '',
     "candidateDefaultDescription" TEXT NOT NULL DEFAULT '',

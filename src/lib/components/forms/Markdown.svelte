@@ -3,12 +3,17 @@
 </script>
 
 <script lang="ts" generics="T extends Record<string, unknown>">
-  import { carta } from "$lib/client/carta"
-
   import Label from "./Label.svelte"
+
+  import { Carta } from "carta-md"
   import { MarkdownEditor } from "carta-md"
+  import DOMPurify from "dompurify"
   import type { HTMLInputAttributes } from "svelte/elements"
   import { formFieldProxy, type SuperForm, type FormPathLeaves, type FormFieldProxy } from "sveltekit-superforms"
+
+  export const carta = new Carta({
+    sanitizer: DOMPurify.sanitize,
+  })
 
   let {
     superform,
@@ -24,7 +29,7 @@
   const { value, errors, constraints } = formFieldProxy(superform, field) satisfies FormFieldProxy<string>
 </script>
 
-<label class="label">
+<label class="block w-0 min-w-full pb-2 pt-2">
   <Label {name} errors={$errors} />
   <input
     type="hidden"

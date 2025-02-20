@@ -2,6 +2,7 @@ import { requireMotionAdmin } from "$lib/server/auth"
 import { PrismaClient } from "$lib/server/db"
 
 import { editFormSchema } from "./schema"
+
 import { fail, message, setError, superValidate } from "sveltekit-superforms"
 import { zod } from "sveltekit-superforms/adapters"
 
@@ -31,6 +32,7 @@ export const actions = {
           id: motion.id,
         },
         data: {
+          name: form.data.name,
           description: form.data.description,
         },
       })

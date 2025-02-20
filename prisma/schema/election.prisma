@@ -6,9 +6,10 @@ model Election {
   imageVersion Int     @default(0)
 
   // Timing
-  start     DateTime?
-  end       DateTime?
-  signUpEnd DateTime?
+  nominationsStart DateTime?
+  nominationsEnd   DateTime?
+  start            DateTime?
+  end              DateTime?
 
   // Membership
   membersOnly Boolean @default(false)
@@ -16,9 +17,10 @@ model Election {
   members     User[]  @relation("ElectionMembers")
 
   // Candidate
-  candidateDefaultDescription String @default("")
-  candidateMaxDescription     Int    @default(1000)
-  candidateMaxUsers           Int    @default(1)
+  ronEnabled                  Boolean @default(true)
+  candidateDefaultDescription String  @default("")
+  candidateMaxDescription     Int     @default(1000)
+  candidateMaxUsers           Int     @default(1)
 
   // Motion
   motionEnabled            Boolean @default(true)
@@ -26,8 +28,8 @@ model Election {
   motionMaxDescription     Int     @default(1000)
   motionMaxSeconders       Int     @default(1)
 
-  // Results
-  resultsPublished Boolean @default(false)
+  // [Results]
+  results Json?
 
   admins  User[]
   roles   Role[]
@@ -45,30 +47,33 @@ model Role {
   electionID String
 
   candidates Candidate[]
-  votes      Vote[]
 }
 
 model Candidate {
-  id           String @id @default(nanoid(8))
+  id           String  @id @default(nanoid(8))
   description  String
-  imageVersion Int    @default(0)
-  role         Role   @relation(fields: [roleID], references: [id], onDelete: Cascade)
+  imageVersion Int     @default(0)
+  isRON        Boolean @default(false)
+  role         Role    @relation(fields: [roleID], references: [id], onDelete: Cascade)
 
   users       User[]
-  userInvites User[] @relation("CandidateUserInvites")
-  votes       Vote[]
+  userInvites User[]          @relation("CandidateUserInvites")
+  votes       CandidateVote[]
 
   roleID Int
+
+  @@unique([roleID, isRON])
 }
 
 model Motion {
-  id               String   @id @default(nanoid(8))
-  name             String   @default("New Motion")
+  id               String       @id @default(nanoid(8))
+  name             String       @default("New Motion")
   description      String
-  election         Election @relation(fields: [electionID], references: [id], onDelete: Cascade)
-  proposer         User     @relation("MotionProposers", fields: [proposerID], references: [userID], onDelete: Cascade)
-  seconders        User[]   @relation("MotionSeconders")
-  seconderRequests User[]   @relation("MotionSeconderRequests")
+  election         Election     @relation(fields: [electionID], references: [id], onDelete: Cascade)
+  proposer         User         @relation("MotionProposers", fields: [proposerID], references: [userID], onDelete: Cascade)
+  seconders        User[]       @relation("MotionSeconders")
+  seconderRequests User[]       @relation("MotionSeconderRequests")
+  votes            MotionVote[]
 
   electionID String
   proposerID String

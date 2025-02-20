@@ -4,6 +4,7 @@
 
 <script lang="ts" generics="T extends Record<string, unknown>">
   import Label from "./Label.svelte"
+
   import type { HTMLInputAttributes } from "svelte/elements"
   import { formFieldProxy, type SuperForm, type FormPathLeaves, fileProxy } from "sveltekit-superforms"
 
@@ -24,9 +25,9 @@
   const file = fileProxy(superform, field)
 </script>
 
-<label class="label max-w-xs">
+<label class="label pb-2 pt-2">
   <Label {name} errors={$errors} />
-  <div class="preset-outlined-primary-200-800 max-w-96 max-h-96 aspect-square p-2 rounded">
+  <div class="banner-image-container p-[1px] preset-outlined-surface-300-700">
     <img class="banner-image" {src} alt={name} />
   </div>
   <input

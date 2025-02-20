@@ -1,3 +1,13 @@
+import {
+  isElectionAdmin,
+  ElectionIsVisible,
+  CandidateIsVisible,
+  isCandidateAdmin,
+  MotionIsVisible,
+  isMotionAdmin,
+  isElectionMember,
+  canSignup,
+} from "$lib/server/checks"
 import { PrismaClient, type Prisma } from "$lib/server/db"
 
 import { SvelteKitAuth } from "@auth/sveltekit"
@@ -87,44 +97,44 @@ export const requireAuth = <T extends LoadOrAction, R>(handler: (event: T & { us
   }
 }
 
+type ElectionReturn<S extends Prisma.ElectionSelect> = Prisma.ElectionGetPayload<{ select: S }> & {
+  isAdmin: boolean
+  isMember: boolean
+  canSignup: boolean
+  voted: boolean
+}
+
 export const requireElection = <T extends LoadOrAction, S extends Prisma.ElectionSelect, R>(
   select: S,
-  handler: (event: T & { election: Prisma.ElectionGetPayload<{ select: S }> }) => Promise<R> | R,
+  handler: (event: T & { election: ElectionReturn<S> }) => Promise<R> | R,
 ) => {
   return async (event: T) => {
     const electionID = event.params.electionID
     if (!electionID) return handleFailure(event, 400, "Missing election ID")
 
-    const electionExists = await PrismaClient.election.findUnique({
-      where: { id: electionID },
-      select: {
-        published: true,
-        membersOnly: true,
-        admins: { select: { userID: true } },
-        _count: { select: { members: { where: { userID: event.locals.session?.user.userID } } } },
-      },
-    })
-
-    if (!electionExists) return handleFailure(event, 404, "Election not found")
-
-    const isAdmin = electionExists.admins.some((admin) => admin.userID === event.locals.session?.user.userID)
-    if (!isAdmin) {
-      if (!electionExists.published) {
-        return handleFailure(event, 403, "Election not published")
-      }
-      if (!electionExists.membersOnly && electionExists._count.members === 0) {
-        return handleFailure(event, 403, "Election is members only")
-      }
-    }
-
-    const election = await PrismaClient.election.findUnique({
-      where: {
-        id: electionID,
-      },
+    const election = (await PrismaClient.election.findUnique({
+      where: { id: electionID, AND: [ElectionIsVisible(event.locals.session?.user.userID)] },
       select,
-    })
+    })) as ElectionReturn<S>
 
     if (!election) return handleFailure(event, 404, "Election not found?")
+
+    election.isAdmin = await PrismaClient.election.exists({
+      id: electionID,
+      AND: [isElectionAdmin(event.locals.session?.user.userID)],
+    })
+    election.isMember = await PrismaClient.election.exists({
+      id: electionID,
+      AND: [isElectionMember(event.locals.session?.user.userID)],
+    })
+    election.canSignup = await PrismaClient.election.exists({
+      id: electionID,
+      AND: [canSignup(event.locals.session?.user.userID)],
+    })
+    election.voted = await PrismaClient.voter.exists({
+      electionID,
+      userID: event.locals.session?.user.userID ?? "",
+    })
 
     return handler({ ...event, election })
   }
@@ -138,19 +148,15 @@ export function requireElectionAdmin<T extends LoadOrAction, S extends Prisma.El
     const electionID = event.params.electionID
     if (!electionID) return handleFailure(event, 400, "Missing election ID")
 
-    const electionExists = await PrismaClient.election.exists({ id: electionID })
-
-    if (!electionExists) return handleFailure(event, 404, "Election not found")
-
     const election = await PrismaClient.election.findUnique({
       where: {
         id: electionID,
-        admins: { some: { userID: event.userID } },
+        AND: [isElectionAdmin(event.userID)],
       },
       select,
     })
 
-    if (!election) return handleFailure(event, 403, "You are not an admin of this election")
+    if (!election) return handleFailure(event, 403, "Not an election admin")
 
     return handler({ ...event, election })
   })
@@ -167,13 +173,12 @@ export const requireCandidate = <T extends LoadOrAction, S extends Prisma.Candid
     const candidate = await PrismaClient.candidate.findUnique({
       where: {
         id: candidateID,
+        AND: [CandidateIsVisible(event.locals.session?.user.userID)],
       },
       select,
     })
 
     if (!candidate) return handleFailure(event, 404, "Candidate not found")
-
-    // Able to view election
 
     return handler({ ...event, candidate })
   }
@@ -186,25 +191,15 @@ export const requireCandidateAdmin = <T extends LoadOrAction, S extends Prisma.C
   return requireAuth(async (event: T & { userID: string }) => {
     const candidateID = event.params.candidateID
 
-    const candidateExists = await PrismaClient.candidate.exists({
-      id: candidateID,
-    })
-
-    if (!candidateExists) return handleFailure(event, 404, "Candidate not found")
-
     const candidate = await PrismaClient.candidate.findUnique({
       where: {
         id: candidateID,
-        users: {
-          some: {
-            userID: event.userID,
-          },
-        },
+        AND: [isCandidateAdmin(event.userID)],
       },
       select,
     })
 
-    if (!candidate) return handleFailure(event, 403, "You are not an admin of this candidate")
+    if (!candidate) return handleFailure(event, 403, "Candidate not found or you are not an admin")
 
     return handler({ ...event, candidate })
   })
@@ -221,6 +216,7 @@ export const requireMotion = <T extends LoadOrAction, S extends Prisma.MotionSel
     const motion = await PrismaClient.motion.findUnique({
       where: {
         id: motionID,
+        AND: [MotionIsVisible(event.locals.session?.user.userID)],
       },
       select,
     })
@@ -239,21 +235,15 @@ export const requireMotionAdmin = <T extends LoadOrAction, S extends Prisma.Moti
     const motionID = event.params.motionID
     if (!motionID) return handleFailure(event, 400, "Missing motion ID")
 
-    const motionExists = await PrismaClient.motion.exists({ id: motionID })
-
-    if (!motionExists) return handleFailure(event, 404, "Motion not found")
-
     const motion = await PrismaClient.motion.findUnique({
       where: {
         id: motionID,
-        proposer: {
-          userID: event.userID,
-        },
+        AND: [isMotionAdmin(event.userID)],
       },
       select,
     })
 
-    if (!motion) return handleFailure(event, 403, "You are not the proposer of this Motion")
+    if (!motion) return handleFailure(event, 403, "Motion not found or you are not an admin")
 
     return callback({ ...event, motion })
   })

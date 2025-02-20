@@ -1,37 +1,8 @@
 import { PrismaClient } from "$lib/server/db"
 import { storePath } from "$lib/server/store"
 
-import type { Prisma } from "@prisma/client"
 import { rm, mkdir } from "node:fs/promises"
 import { join } from "node:path"
-
-export const isElectionAdmin = async (electionID: string, userID: string): Promise<boolean> => {
-  const election = await PrismaClient.election.findUnique({
-    where: {
-      id: electionID,
-      admins: {
-        some: {
-          userID: userID,
-        },
-      },
-    },
-  })
-  return election !== null
-}
-
-export const isCandidateAdmin = async (candidateID: string, userID: string): Promise<boolean> => {
-  const candidate = await PrismaClient.candidate.findUnique({
-    where: {
-      id: candidateID,
-      users: {
-        some: {
-          userID: userID,
-        },
-      },
-    },
-  })
-  return candidate !== null
-}
 
 export const deleteElection = async (electionID: string) => {
   await PrismaClient.election.delete({
@@ -47,4 +18,46 @@ export const deleteElection = async (electionID: string) => {
 export const createElection = async (id: string) => {
   const path = join(storePath, "elections", id, "candidates")
   await mkdir(path, { recursive: true })
+}
+
+export const enforceRON = async (
+  tx: Parameters<Parameters<typeof PrismaClient.$transaction>[0]>[0],
+  electionID: string,
+) => {
+  const election = await tx.election.findUnique({
+    where: { id: electionID },
+    select: { roles: { select: { id: true } }, ronEnabled: true },
+  })
+
+  if (!election) {
+    throw new Error("Election not found")
+  }
+
+  if (election.ronEnabled) {
+    // Add RON to all roles that don't have it
+    for (const role of election.roles) {
+      await tx.candidate.upsert({
+        where: {
+          roleID_isRON: {
+            roleID: role.id,
+            isRON: true,
+          },
+        },
+        create: {
+          description: "",
+          isRON: true,
+          role: { connect: { id: role.id } },
+        },
+        update: {}, // No updates needed if RON exists
+      })
+    }
+  } else {
+    // Remove RON from all roles
+    await tx.candidate.deleteMany({
+      where: {
+        role: { electionID },
+        isRON: true,
+      },
+    })
+  }
 }

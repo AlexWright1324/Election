@@ -1,5 +1,6 @@
 import { requireElectionAdmin } from "$lib/server/auth"
 import { PrismaClient } from "$lib/server/db"
+import { enforceRON } from "$lib/server/election.js"
 
 import { message, fail, superValidate } from "sveltekit-superforms"
 import { zod } from "sveltekit-superforms/adapters"
@@ -59,17 +60,20 @@ export const actions = {
         .filter((r) => r.id === null)
         .map((r) => ({ name: r.name, seatsToFill: r.seatsToFill }))
 
-      await PrismaClient.election.update({
-        where: { id: election.id },
-        data: {
-          roles: {
-            deleteMany: {
-              id: { in: idsToDelete },
+      await PrismaClient.$transaction(async (tx) => {
+        await tx.election.update({
+          where: { id: election.id },
+          data: {
+            roles: {
+              deleteMany: {
+                id: { in: idsToDelete },
+              },
+              update,
+              create,
             },
-            update,
-            create,
           },
-        },
+        })
+        await enforceRON(tx, election.id)
       })
 
       return message(form, "Updated")

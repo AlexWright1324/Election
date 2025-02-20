@@ -1,0 +1,182 @@
+.carta-theme__default {
+  .carta-renderer,
+  &.carta-viewer {
+    @apply prose max-w-full dark:prose-invert;
+  }
+
+  &.carta-editor {
+    @apply mb-1 mt-1 rounded transition-all preset-outlined-surface-300-700;
+
+    &:focus-within {
+      @apply preset-outlined-primary-500;
+
+      .carta-toolbar {
+        @apply border-b-primary-500;
+      }
+    }
+
+    .carta-wrapper {
+      @apply flex-grow p-3;
+    }
+
+    .carta-input,
+    .carta-renderer {
+      min-height: 120px;
+      max-height: 160px;
+      overflow: auto;
+    }
+
+    .carta-font-code {
+      @apply font-mono;
+      caret-color: white;
+    }
+
+    .carta-toolbar {
+      @apply h-auto border-b transition-all border-b-surface-300-700;
+
+      .carta-icon {
+        @apply btn-icon;
+      }
+    }
+
+    .carta-toolbar-left {
+      button {
+        @apply btn;
+      }
+
+      .carta-active {
+        background-color: --var(--background);
+        color: white;
+
+        border-right: 1px solid --var(--border);
+        border-bottom: 1px solid --var(--background);
+
+        &:not(:first-child) {
+          border-left: 1px solid --var(--border);
+        }
+      }
+    }
+
+    .carta-toolbar-right {
+      padding-right: 12px;
+    }
+
+    .carta-icons-menu {
+      padding: 8px;
+      border: 1px solid --var(--border);
+      border-radius: 6px;
+      min-width: 180px;
+      background: --var(--background);
+
+      .carta-icon-full {
+        padding-left: 6px;
+        padding-right: 6px;
+
+        margin-top: 2px;
+        &:first-child {
+          margin-top: 0;
+        }
+
+        &:hover {
+          color: white;
+          background-color: --var(--border);
+        }
+
+        span {
+          margin-left: 6px;
+          color: white;
+          font-size: 0.85rem;
+        }
+      }
+    }
+  }
+
+  &.carta-emoji {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+
+    width: 19rem;
+    max-height: 14rem;
+    overflow-x: auto;
+    overflow-y: auto;
+    border-radius: 4px;
+    font-family: inherit;
+    background-color: --var(--background);
+    word-break: break-word;
+    scroll-padding: 6px;
+  }
+
+  &.carta-emoji button {
+    background: --var(--background-light);
+
+    cursor: pointer;
+    display: inline-block;
+    border-radius: 4px;
+    border: 0;
+    padding: 0;
+    margin: 0.175rem;
+
+    min-width: 2rem;
+    height: 2rem;
+    font-size: 1.2rem;
+    line-height: 100%;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  &.carta-emoji button:hover,
+  &.carta-emoji button.carta-active {
+    background: --var(--border);
+  }
+
+  &.carta-slash {
+    width: 18rem;
+    max-height: 14rem;
+    overflow-y: scroll;
+    border-radius: 4px;
+    font-family: inherit;
+    background-color: --var(--background);
+    padding: 6px;
+    scroll-padding: 6px;
+  }
+
+  &.carta-slash span {
+    width: fit-content;
+  }
+
+  &.carta-slash button {
+    background: none;
+    width: 100%;
+    padding: 10px;
+    border: 0;
+    border-radius: 4px;
+  }
+
+  &.carta-slash .carta-slash-group {
+    padding: 0 4px 0 4px;
+    margin-bottom: 4px;
+    font-size: 0.8rem;
+  }
+
+  &.carta-slash button.carta-active,
+  &.carta-slash button:hover {
+    background: --var(--background-light);
+    cursor: pointer;
+  }
+
+  &.carta-slash .carta-snippet-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  &.carta-slash .carta-snippet-description {
+    font-size: 0.8rem;
+    text-overflow: ellipsis;
+  }
+}
+
+html.dark .shiki,
+html.dark .shiki span {
+  color: var(--shiki-dark) !important;
+}

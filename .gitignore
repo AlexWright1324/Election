@@ -28,3 +28,6 @@ vite.config.ts.timestamp-*
 # Nix
 /.direnv
 /.pre-commit-config.yaml
+
+# Repomix
+repomix-output.txt

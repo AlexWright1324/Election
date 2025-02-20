@@ -3,35 +3,21 @@
 </script>
 
 <script lang="ts" generics="T extends Record<string, unknown>">
-  import Label from "./Label.svelte"
-
   import type { HTMLInputAttributes } from "svelte/elements"
   import { formFieldProxy, type SuperForm, type FormPathLeaves } from "sveltekit-superforms"
 
   let {
     superform,
     field,
-    name,
     ...restProps
   }: {
     superform: SuperForm<T>
     field: FormPathLeaves<T>
-    name: string
   } & HTMLInputAttributes = $props()
 
-  const { value, errors, constraints } = formFieldProxy(superform, field)
+  const { value, constraints } = formFieldProxy(superform, field)
 </script>
 
-<label class="label pb-2 pt-2">
-  <Label {name} errors={$errors} />
-  <input
-    class="input"
-    name={field}
-    type="text"
-    aria-invalid={$errors ? "true" : undefined}
-    placeholder="Enter some text..."
-    bind:value={$value}
-    {...$constraints}
-    {...restProps}
-  />
+<label class="label">
+  <input name={field} type="hidden" bind:value={$value} {...$constraints} {...restProps} />
 </label>

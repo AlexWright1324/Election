@@ -32,6 +32,9 @@ const PAGES = {
   "/election/[electionID]/edit/roles": (params: { electionID: string | number }) => {
     return `/election/${params["electionID"]}/edit/roles`
   },
+  "/election/[electionID]/results": (params: { electionID: string | number }) => {
+    return `/election/${params["electionID"]}/results`
+  },
   "/election/[electionID]/vote": (params: { electionID: string | number }) => {
     return `/election/${params["electionID"]}/vote`
   },
@@ -52,6 +55,9 @@ const PAGES = {
 const SERVERS = {
   "GET /assets/[...path]": (params: { path: (string | number)[] }) => {
     return `/assets/${params["path"]?.join("/")}`
+  },
+  "GET /election/[electionID]/results/proof": (params: { electionID: string | number }) => {
+    return `/election/${params["electionID"]}/results/proof`
   },
 }
 
@@ -98,6 +104,9 @@ const ACTIONS = {
   },
   "editRoles /election/[electionID]/edit/roles": (params: { electionID: string | number }) => {
     return `/election/${params["electionID"]}/edit/roles?/editRoles`
+  },
+  "vote /election/[electionID]/vote": (params: { electionID: string | number }) => {
+    return `/election/${params["electionID"]}/vote?/vote`
   },
   "second /motion/[motionID]": (params: { motionID: string | number }) => {
     return `/motion/${params["motionID"]}?/second`
@@ -232,12 +241,13 @@ export type KIT_ROUTES = {
     "/election/[electionID]/edit": "electionID"
     "/election/[electionID]/edit/members": "electionID"
     "/election/[electionID]/edit/roles": "electionID"
+    "/election/[electionID]/results": "electionID"
     "/election/[electionID]/vote": "electionID"
     "/motion/[motionID]": "motionID"
     "/motion/[motionID]/edit": "motionID"
     "/motion/[motionID]/edit/requests": "motionID"
   }
-  SERVERS: { "GET /assets/[...path]": "path" }
+  SERVERS: { "GET /assets/[...path]": "path"; "GET /election/[electionID]/results/proof": "electionID" }
   ACTIONS: {
     "acceptInvite /candidate/[candidateID]": "candidateID"
     "update /candidate/[candidateID]/edit": "candidateID"
@@ -253,6 +263,7 @@ export type KIT_ROUTES = {
     "populateMembers /election/[electionID]/edit/members": "electionID"
     "updateMembers /election/[electionID]/edit/members": "electionID"
     "editRoles /election/[electionID]/edit/roles": "electionID"
+    "vote /election/[electionID]/vote": "electionID"
     "second /motion/[motionID]": "motionID"
     "edit /motion/[motionID]/edit": "motionID"
     "accept /motion/[motionID]/edit/requests": "motionID"

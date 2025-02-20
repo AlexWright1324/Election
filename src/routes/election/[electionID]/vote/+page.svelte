@@ -1,38 +1,62 @@
 <script lang="ts">
-  import DragOrderInput from "$lib/components/input/DragOrderInput.svelte"
+  import BackToElection from "$lib/components/BackToElection.svelte"
 
-  import SuperDebug, { superForm } from "sveltekit-superforms"
+  import DragOrderInput from "./DragOrderInput.svelte"
+  import Radio from "./Radio.svelte"
+
+  import { seperateJoin } from "$lib/client/separate"
+  import { superForm } from "$lib/client/superform"
+
+  import { motionVote, serverVoteSchema } from "./schema"
+
+  import { getContext, onMount } from "svelte"
+  import { type SuperValidated } from "sveltekit-superforms"
+  import { zod } from "sveltekit-superforms/adapters"
+  import type { z } from "zod"
 
   let { data } = $props()
+  const superform = superForm(
+    getContext("toast"),
+    data.voteForm as SuperValidated<z.infer<typeof serverVoteSchema>, any, z.infer<typeof serverVoteSchema>>,
+    {
+      resetForm: false,
+      dataType: "json",
+      validators: zod(serverVoteSchema),
+    },
+  )
+  const { enhance, isTainted, tainted, validateForm, allErrors } = superform
 
-  const { form, enhance } = superForm(data.voteForm, {
-    dataType: "json",
+  // Ensure errors are displayed on mount.
+  onMount(async () => {
+    await validateForm({ update: true })
   })
-
-  $form.roles = data.election.roles.map((r) => ({ id: r.id, candidates: [] }))
-  // @ts-ignore
-  $form.motions = data.election.motions.map((m) => ({ id: m.id }))
 </script>
+
+<BackToElection electionID={data.election.id} />
 
 <h1 class="h1">Vote</h1>
 
-<SuperDebug data={$form} />
-
 <form action="?/vote" method="post" use:enhance>
-  {#each data.election.roles as role, index}
-    <h2 class="h2">{role.name}</h2>
-    <DragOrderInput candidates={role.candidates} bind:value={$form.roles[index].candidates} ron={true} />
+  <h2 class="h2">Roles</h2>
+  {#each data.election.roles as role, index (role.id)}
+    <DragOrderInput
+      {superform}
+      name={role.name}
+      field="roles[{index}].candidates"
+      candidates={role.candidates.map((c) => ({
+        id: c.id,
+        name: seperateJoin(c.users.map((u) => u.name)),
+        isRON: c.isRON,
+      }))}
+    />
   {/each}
 
+  <h2 class="h2">Motions</h2>
   {#each data.election.motions as motion, index}
-    <h2 class="h2">{motion.name}</h2>
-    {#each [["For", true], ["Against", false], ["Abstain", null]] as [label, value]}
-      <label class="flex items-center gap-2">
-        <input class="radio" type="radio" name="motion-{index}" {value} bind:group={$form.motions[index].vote} />
-        <p>{label}</p>
-      </label>
-    {/each}
+    <Radio {superform} field="motions[{index}].vote" name={motion.name} options={motionVote} />
   {/each}
 
-  <button class="btn preset-filled-primary-500">Vote</button>
+  <button class="btn mt-2 w-full preset-filled-primary-500" disabled={!isTainted($tainted) || $allErrors.length !== 0}>
+    Submit Vote
+  </button>
 </form>

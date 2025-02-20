@@ -8,9 +8,9 @@
   } = $props()
 </script>
 
-<div class="label-text flex gap-2">
-  <span>{name}</span>
+<div class="text-sm">
+  <p>{name}</p>
   {#if errors}
-    <span class="text-error-500">⚠️ {errors}</span>
+    <p class="text-error-500">⚠️ {errors}</p>
   {/if}
 </div>

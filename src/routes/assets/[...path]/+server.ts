@@ -1,11 +1,10 @@
 import PlaceHolderImage from "$lib/images/placeholder.png"
 import { storePath } from "$lib/server/store"
 
-import type { RequestHandler } from "./$types"
 import { error, redirect } from "@sveltejs/kit"
 import { join, parse } from "node:path"
 
-export const GET: RequestHandler = async ({ params }) => {
+export const GET = async ({ params }) => {
   const filePath = join(storePath, params.path)
 
   const file = Bun.file(filePath)

@@ -6,15 +6,14 @@ import { redirect } from "@sveltejs/kit"
 import { fail, setError, superValidate } from "sveltekit-superforms"
 import { zod } from "sveltekit-superforms/adapters"
 
-export const load = async ({ parent }) => {
-  const { session } = await parent()
-
+export const load = async ({ locals }) => {
   const select: Prisma.ElectionSelect = {
     id: true,
     name: true,
     start: true,
     end: true,
-    signUpEnd: true,
+    nominationsStart: true,
+    nominationsEnd: true,
     published: true,
     imageVersion: true,
     membersOnly: true,
@@ -27,18 +26,16 @@ export const load = async ({ parent }) => {
     select,
   })
 
-  const managedElections = session?.user.userID
-    ? await PrismaClient.election.findMany({
-        where: {
-          admins: {
-            some: {
-              userID: session.user.userID,
-            },
-          },
+  const managedElections = await PrismaClient.election.findMany({
+    where: {
+      admins: {
+        some: {
+          userID: locals.session?.user.userID ?? "",
         },
-        select,
-      })
-    : []
+      },
+    },
+    select,
+  })
 
   return {
     elections,

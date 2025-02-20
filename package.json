@@ -4,38 +4,41 @@
   "private": true,
   "scripts": {
     "dev": "bun --bun node_modules/.bin/svelte-kit sync && bun --bun node_modules/.bin/vite dev",
-    "build": "bun --bun node_modules/.bin/svelte-kit sync && bun --bun node_modules/.bin/vite build"
+    "build": "bun --bun node_modules/.bin/svelte-kit sync && bun --bun node_modules/.bin/vite build",
+    "repomix": "bunx repomix --ignore \"nix/,prisma/migrations,src/lib/stylesheets/theme.ts,src/lib/ROUTES.ts\""
   },
   "devDependencies": {
     "@auth/prisma-adapter": "^2.7.4",
     "@dbushell/xml-streamify": "^0.7.0",
     "@skeletonlabs/skeleton": "^3.0.0-next.10",
-    "@skeletonlabs/skeleton-svelte": "^1.0.0-next.18",
+    "@skeletonlabs/skeleton-svelte": "^1.0.0-next.19",
     "@sveltejs/adapter-auto": "^4.0.0",
-    "@sveltejs/kit": "^2.17.1",
+    "@sveltejs/kit": "^2.17.2",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/postcss": "^4.0.6",
     "@tailwindcss/typography": "^0.5.16",
     "@tailwindcss/vite": "^4.0.6",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/bun": "^1.2.2",
-    "@types/node": "^22.13.1",
+    "@types/node": "^22.13.4",
     "autoprefixer": "^10.4.20",
+    "docx": "^9.2.0",
     "eslint-plugin-svelte": "^2.46.1",
-    "globals": "^15.14.0",
-    "prettier": "^3.5.0",
+    "globals": "^15.15.0",
+    "prettier": "^3.5.1",
     "prettier-plugin-svelte": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "prisma": "^6.3.0",
+    "prisma-json-types-generator": "^3.2.2",
     "sharp": "^0.33.5",
     "stv": "^0.0.2",
-    "svelte": "^5.19.10",
+    "svelte": "^5.20.1",
     "svelte-adapter-bun": "^0.5.2",
     "svelte-check": "^4.1.4",
     "sveltekit-superforms": "^2.23.1",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.3",
-    "typescript-eslint": "^8.24.0",
+    "typescript-eslint": "^8.24.1",
     "vite": "^6.1.0",
     "vite-plugin-kit-routes": "^0.8.1",
     "zod": "^3.24.1"
@@ -52,6 +55,7 @@
   "overrides": {
     "prisma": "6.3.0",
     "@prisma/client": "6.3.0",
+    "zod": "3.24.1",
     "@skeletonlabs/skeleton": "~3.0.0-next",
     "@skeletonlabs/skeleton-svelte": "~1.0.0-next",
     "tailwindcss": "^3.4.17"
@@ -64,7 +68,9 @@
     "importOrderSeparation": true,
     "importOrder": [
       "^\\$lib\\/(.*)\\.svelte$",
-      "^\\$lib\\/",
+      "^\\.\\/(.*)\\.svelte$",
+      "^\\$lib",
+      "^\\.\\/(.*)",
       "<THIRD_PARTY_MODULES>"
     ],
     "overrides": [
@@ -77,8 +83,8 @@
     ],
     "plugins": [
       "prettier-plugin-svelte",
-      "prettier-plugin-tailwindcss",
-      "@trivago/prettier-plugin-sort-imports"
+      "@trivago/prettier-plugin-sort-imports",
+      "prettier-plugin-tailwindcss"
     ]
   }
 }

@@ -39,5 +39,15 @@ export const superForm = <
       }
       return params[1]?.onError?.(event)
     },
+    onResult: (event) => {
+      if (event.result.type === "failure") {
+        toast.create({
+          title: "Error",
+          type: "error",
+          description: event.result.data?.form.errors._errors,
+        })
+      }
+      return params[1]?.onResult?.(event)
+    },
   })
 }

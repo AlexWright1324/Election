@@ -1,6 +1,7 @@
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
+@import "carta.css";
 
 html,
 body {
@@ -13,77 +14,9 @@ body {
 
 @layer components {
   .banner-image {
-    @apply max-h-full w-full rounded object-contain;
+    @apply w-full rounded object-contain;
   }
-}
-
-/* Carta */
-
-/* Code dark mode */
-/* Only if you didn't specify a custom code theme */
-html.dark .shiki,
-html.dark .shiki span {
-  color: var(--shiki-dark) !important;
-}
-
-.carta-editor {
-  @apply card preset-outlined-surface-200-800;
-
-  .carta-toolbar {
-    @apply h-auto w-full min-w-0 max-w-full !important;
-    @apply border-b-[1px] p-2 border-b-surface-200-800;
-
-    .carta-toolbar-left {
-      @apply gap-2;
-
-      button {
-        @apply btn;
-
-        &.carta-active {
-          @apply preset-filled;
-          &:hover {
-            background-color: unset;
-            filter: unset;
-            color: unset;
-          }
-        }
-
-        &:hover {
-          @apply preset-filled;
-        }
-      }
-    }
-    .carta-toolbar-right {
-      @apply gap-1;
-
-      button {
-        @apply btn-icon m-0;
-
-        &:hover {
-          @apply preset-filled;
-        }
-      }
-    }
+  .banner-image-container {
+    @apply flex aspect-square max-w-md rounded;
   }
-
-  .carta-wrapper {
-    @apply flex-grow p-2;
-  }
-
-  .carta-input {
-    @apply max-h-[300px] min-h-[300px] overflow-auto;
-  }
-
-  .carta-font-code {
-    @apply font-mono caret-white;
-  }
-}
-
-.carta-renderer,
-.carta-viewer {
-  @apply prose dark:prose-invert;
-}
-
-.carta-viewer {
-  @apply min-w-0 break-words;
 }
