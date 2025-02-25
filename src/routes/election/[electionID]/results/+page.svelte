@@ -31,62 +31,25 @@
   <h3 class="h3">Rounds</h3>
   <p>Droop Quota: {roleResult.droopQuota}</p>
 
-  <div class="table-wrap">
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Status</th>
-          <th class="!text-right">Tally</th>
-        </tr>
-      </thead>
-      <tbody>
-        {#each roleResult.rounds as round, index}
-          <tr>
-            <td class="text-center preset-tonal" colspan="3">Round {index + 1}</td>
-          </tr>
-          {#each round.candidates as candidate}
-            <tr>
-              <td>{candidate.name}</td>
-              <td>
-                {#if candidate.status === "winner"}
-                  Winner
-                {:else if candidate.status === "eliminated"}
-                  Eliminated
-                {:else}
-                  Running
-                {/if}
-              </td>
-              <td class="text-right">
-                {#if candidate.tally}
-                  {candidate.tally}
-                {:else}
-                  N/A
-                {/if}
-              </td>
-            </tr>
-          {/each}
-        {/each}
-      </tbody>
-    </table>
-  </div>
-
   <Accordion classes="" collapsible>
-    {#each roleResult.rounds as round, index}
-      <Accordion.Item value={(index + 1).toString()}>
-        {#snippet lead()}<ClipboardList size={24} />{/snippet}
-        {#snippet control()}Round {index + 1}{/snippet}
-        {#snippet panel()}
-          <div class="table-wrap">
-            <table class="table">
-              <thead>
+    <Accordion.Item value="Round">
+      {#snippet lead()}<ClipboardList size={24} />{/snippet}
+      {#snippet control()}Round Data{/snippet}
+      {#snippet panel()}
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Status</th>
+                <th class="!text-right">Tally</th>
+              </tr>
+            </thead>
+            <tbody>
+              {#each roleResult.rounds as round, index}
                 <tr>
-                  <th>Name</th>
-                  <th>Status</th>
-                  <th class="!text-right">Tally</th>
+                  <td class="preset-tonal text-center" colspan="3">Round {index + 1}</td>
                 </tr>
-              </thead>
-              <tbody>
                 {#each round.candidates as candidate}
                   <tr>
                     <td>{candidate.name}</td>
@@ -108,14 +71,15 @@
                     </td>
                   </tr>
                 {/each}
-              </tbody>
-            </table>
-          </div>
-        {/snippet}
-      </Accordion.Item>
-      <hr class="hr" />
-    {/each}
+              {/each}
+            </tbody>
+          </table>
+        </div>
+      {/snippet}
+    </Accordion.Item>
   </Accordion>
+{:else}
+  <p>No roles!</p>
 {/each}
 
 <h2 class="h2">Motions</h2>
@@ -133,4 +97,6 @@
   {:else}
     <p>Motion Tied</p>
   {/if}
+{:else}
+  <p>No motions</p>
 {/each}

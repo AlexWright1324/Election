@@ -6,7 +6,7 @@
     })
   }
 
-  let open = $state(true)
+  let open = $state(false)
   let modalResolve = $state<(value: boolean | PromiseLike<boolean>) => void>()
 </script>
 

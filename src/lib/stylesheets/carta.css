@@ -1,11 +1,11 @@
 .carta-theme__default {
   .carta-renderer,
   &.carta-viewer {
-    @apply prose max-w-full dark:prose-invert;
+    @apply prose dark:prose-invert max-w-full;
   }
 
   &.carta-editor {
-    @apply mb-1 mt-1 rounded transition-all preset-outlined-surface-300-700;
+    @apply preset-outlined-surface-300-700 mt-1 mb-1 rounded transition-all;
 
     &:focus-within {
       @apply preset-outlined-primary-500;
@@ -22,7 +22,7 @@
     .carta-input,
     .carta-renderer {
       min-height: 120px;
-      max-height: 160px;
+      max-height: 500px;
       overflow: auto;
     }
 
@@ -32,7 +32,7 @@
     }
 
     .carta-toolbar {
-      @apply h-auto border-b transition-all border-b-surface-300-700;
+      @apply border-b-surface-300-700 h-auto border-b transition-all;
 
       .carta-icon {
         @apply btn-icon;
@@ -175,8 +175,9 @@
     text-overflow: ellipsis;
   }
 }
-
-html.dark .shiki,
-html.dark .shiki span {
-  color: var(--shiki-dark) !important;
+@variant dark {
+  .shiki,
+  .shiki span {
+    color: var(--shiki-dark) !important;
+  }
 }

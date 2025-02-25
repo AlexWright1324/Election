@@ -1,5 +1,5 @@
 import { requireElectionAdmin } from "$lib/server/auth"
-import { PrismaClient } from "$lib/server/db"
+import { Prisma, PrismaClient } from "$lib/server/db"
 import { deleteElection, enforceRON } from "$lib/server/election"
 import { storeElectionCoverImage } from "$lib/server/store"
 
@@ -39,60 +39,73 @@ export const load = requireElectionAdmin(
 )
 
 export const actions = {
-  update: requireElectionAdmin({ id: true, imageVersion: true }, async ({ request, election }) => {
-    const form = await superValidate(request, zod(updateSchema), {
-      strict: true,
-    })
+  update: requireElectionAdmin(
+    { id: true, imageVersion: true, start: true, end: true },
+    async ({ request, election }) => {
+      const form = await superValidate(request, zod(updateSchema), {
+        strict: true,
+      })
 
-    if (!form.valid) {
-      return fail(400, { form })
-    }
+      if (!form.valid) {
+        return fail(400, { form })
+      }
 
-    let imageProcessed: boolean | null = null
-    if (form.data.image) {
-      await storeElectionCoverImage(election.id, form.data.image)
-        .then(() => {
-          imageProcessed = true
-        })
-        .catch(() => {
-          imageProcessed = false
-        })
-    }
+      let imageProcessed: boolean | null = null
+      if (form.data.image) {
+        await storeElectionCoverImage(election.id, form.data.image)
+          .then(() => {
+            imageProcessed = true
+          })
+          .catch(() => {
+            imageProcessed = false
+          })
+      }
 
-    await PrismaClient.$transaction(async (tx) => {
-      await tx.election.update({
-        where: {
-          id: election.id,
-        },
-        data: {
-          name: form.data.name,
-          description: form.data.description,
+      // Only allow changes to certain field when election is ongoing
+      const initialData = {
+        name: form.data.name,
+        description: form.data.description,
+        candidateDefaultDescription: form.data.candidateDefaultDescription,
+        candidateMaxDescription: form.data.candidateMaxDescription,
+        motionMaxDescription: form.data.motionMaxDescription,
+        motionDefaultDescription: form.data.motionDefaultDescription,
+        motionMaxSeconders: form.data.motionMaxSeconders,
+      }
+
+      // TODO: Decide if election is locked after voting starts (disregard ending)
+      let data: Prisma.ElectionUpdateInput = initialData
+      if (election.start && election.end && election.start < new Date() && election.end > new Date()) {
+        data = {
+          ...initialData,
           start: form.data.start,
           end: form.data.end,
           nominationsStart: form.data.nominationsStart,
           nominationsEnd: form.data.nominationsEnd,
-          published: form.data.published,
           membersOnly: form.data.membersOnly,
           ronEnabled: form.data.ronEnabled,
-          candidateDefaultDescription: form.data.candidateDefaultDescription,
-          candidateMaxDescription: form.data.candidateMaxDescription,
           candidateMaxUsers: form.data.candidateMaxUsers,
-          motionDefaultDescription: form.data.motionDefaultDescription,
           motionEnabled: form.data.motionEnabled,
-          motionMaxDescription: form.data.motionMaxDescription,
-          motionMaxSeconders: form.data.motionMaxSeconders,
-          imageVersion: election.imageVersion + (imageProcessed === true ? 1 : 0),
-        },
+          published: form.data.published,
+        } satisfies typeof form.data // Check all fields are present
+      }
+
+      await PrismaClient.$transaction(async (tx) => {
+        await tx.election.update({
+          where: {
+            id: election.id,
+          },
+          data,
+        })
+        await enforceRON(tx, election.id)
       })
-      await enforceRON(tx, election.id)
-    })
 
-    if (imageProcessed === false) {
-      return setError(form, "image", "Failed to store image")
-    }
+      if (imageProcessed === false) {
+        return setError(form, "image", "Failed to store image")
+      }
 
-    return message(form, "Updated")
-  }),
+      return message(form, "Updated")
+    },
+  ),
   delete: requireElectionAdmin({ id: true }, async ({ election }) => {
     deleteElection(election.id)
 

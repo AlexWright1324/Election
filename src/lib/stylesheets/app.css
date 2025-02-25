@@ -4,6 +4,7 @@
 @import "@skeletonlabs/skeleton";
 @import "@skeletonlabs/skeleton/optional/presets";
 @import "@skeletonlabs/skeleton/themes/cerberus";
+@source '../../../node_modules/@skeletonlabs/skeleton-svelte';
 
 @import "@fontsource/inter";
 
@@ -42,7 +43,7 @@ body {
   --text-scaling: 1;
   --base-font-color: var(--color-surface-950);
   --base-font-color-dark: var(--color-surface-50);
-  --base-font-family: "Inter", "Roboto", "Helvetica Neue", "Arial Nova", "Nimbus Sans", "Arial", system-ui;
+  --base-font-family: "Inter", system-ui;
   --base-font-size: inherit;
   --base-line-height: inherit;
   --base-font-weight: normal;

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { date } from "$lib/client/time.svelte"
   import DeleteModal from "$lib/components/modals/Delete.svelte"
   import Discard, { taintedMessage } from "$lib/components/modals/Discard.svelte"
 
@@ -20,6 +21,11 @@
     taintedMessage,
   })
 
+  let votingNow = $derived.by(() => {
+    if (!(data.election.start && data.election.end)) return false
+    return data.election.start < date.now && data.election.end > date.now
+  })
+
   const { form, enhance, isTainted, tainted } = superform
 </script>
 
@@ -37,7 +43,7 @@
     <button type="submit" class="btn preset-filled-primary-500 w-full" disabled={!isTainted($tainted)}>
       Update Election
     </button>
-    <DisableBox disabled={false} disabledText="Election is ongoing">
+    <DisableBox disabled={votingNow} disabledText="Election is ongoing">
       <SwitchField {superform} field="published" name="Publish Election">
         {#snippet enabledText()}
           This election is published and visible to everyone.
@@ -80,11 +86,13 @@
   </aside>
   <main class="flex-1">
     <TextField {superform} field="name" name="Title" />
+    <MarkdownField {superform} field="description" name="Description" />
     <DateTimeField {superform} field="nominationsStart" name="Nominations Start Date" />
     <DateTimeField {superform} field="nominationsEnd" name="Nominations End Date" />
-    <DateTimeField {superform} field="start" name="Start Date" />
-    <DateTimeField {superform} field="end" name="End Date" />
-    <MarkdownField {superform} field="description" name="Description" />
+    <DisableBox disabled={votingNow} disabledText="Election is ongoing">
+      <DateTimeField {superform} field="start" name="Start Date" />
+      <DateTimeField {superform} field="end" name="End Date" />
+    </DisableBox>
 
     <h4 class="h4">Candidate Settings</h4>
 

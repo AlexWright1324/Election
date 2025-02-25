@@ -111,3 +111,8 @@ export const canVote = (userID: string): Prisma.ElectionWhereInput =>
       },
     ],
   }) as const
+
+export const isElectionOngoing = (election: { start: Date | null; end: Date | null }) => {
+  const now = new Date()
+  return election.start !== null && election.end !== null && now >= election.start && now <= election.end
+}

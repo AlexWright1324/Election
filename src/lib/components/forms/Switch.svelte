@@ -49,6 +49,14 @@
     </div>
   </div>
   <div>
+    <input
+      name={field}
+      type="hidden"
+      aria-invalid={$errors ? "true" : undefined}
+      bind:value={$value}
+      {...$constraints}
+      {...restProps}
+    />
     <Switch name={field} bind:checked={$value}>
       {#snippet inactiveChild()}
         <X size="14" />
