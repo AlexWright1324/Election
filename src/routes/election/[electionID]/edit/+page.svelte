@@ -1,6 +1,6 @@
 <script lang="ts">
   import DeleteModal from "$lib/components/modals/Delete.svelte"
-  import UnsavedModal, { taintedMessage } from "$lib/components/modals/Unsaved.svelte"
+  import Discard, { taintedMessage } from "$lib/components/modals/Discard.svelte"
 
   import { getElectionCoverImage } from "$lib/client/store"
   import { superForm } from "$lib/client/superform"
@@ -23,14 +23,7 @@
   const { form, enhance, isTainted, tainted } = superform
 </script>
 
-<UnsavedModal />
-
-<div class="flex flex-wrap gap-2 p-2">
-  <button form="update" type="submit" class="btn preset-filled-primary-500" disabled={!isTainted($tainted)}>
-    Update Election
-  </button>
-  <DeleteModal name="Election" />
-</div>
+<Discard />
 
 <form
   class="flex flex-wrap gap-x-4"
@@ -41,8 +34,10 @@
   use:enhance
 >
   <aside class="w-full lg:w-96">
-    <h3 class="h3">Settings</h3>
-    <DisableBox disabled={true} disabledText="Election is ongoing, settings cannot be changed.">
+    <button type="submit" class="btn preset-filled-primary-500 w-full" disabled={!isTainted($tainted)}>
+      Update Election
+    </button>
+    <DisableBox disabled={false} disabledText="Election is ongoing">
       <SwitchField {superform} field="published" name="Publish Election">
         {#snippet enabledText()}
           This election is published and visible to everyone.
@@ -105,3 +100,6 @@
     {/if}
   </main>
 </form>
+
+<h2 class="h2 mb-4">Danger Zone</h2>
+<DeleteModal name="Election" />

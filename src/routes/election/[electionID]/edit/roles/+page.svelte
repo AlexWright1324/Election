@@ -1,5 +1,5 @@
 <script lang="ts">
-  import UnsavedModal, { taintedMessage } from "$lib/components/modals/Unsaved.svelte"
+  import Discard, { taintedMessage } from "$lib/components/modals/Discard.svelte"
 
   import { NumberField, TextField } from "$lib/components/forms/index"
 
@@ -32,7 +32,7 @@
   }
 </script>
 
-<UnsavedModal />
+<Discard />
 
 <form method="post" action="?/editRoles" use:enhance>
   <div class="flex flex-wrap gap-2">
@@ -41,7 +41,7 @@
   </div>
   <ul>
     {#each $form.roles as role, index}
-      <li class="flex gap-2 justify-center items-end">
+      <li class="flex items-end justify-center gap-2">
         <input type="hidden" name="id" bind:value={role.id} />
         <TextField {superform} field="roles[{index}].name" name="Role Name" />
         <NumberField {superform} field="roles[{index}].seatsToFill" name="Seats to Fill" />

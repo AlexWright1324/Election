@@ -5,7 +5,7 @@
 
   import "$lib/stylesheets/app.css"
 
-  import { ToastProvider } from "@skeletonlabs/skeleton-svelte"
+  import { Switch, ToastProvider } from "@skeletonlabs/skeleton-svelte"
 
   let { data, children } = $props()
 </script>
@@ -14,7 +14,7 @@
 
 <ToastProvider>
   <Header userID={data.session?.user.userID} />
-  <main class="max-w-screen-2xl w-full min-w-0 mx-auto p-4">
+  <main class="mx-auto w-full max-w-screen-2xl min-w-0 p-4">
     {@render children()}
   </main>
   <Footer />

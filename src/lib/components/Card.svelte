@@ -31,10 +31,12 @@
 </a>
 
 <style lang="postcss">
+  @reference "$lib/stylesheets/app.css";
+
   a {
     @apply block max-w-md overflow-hidden;
     @apply card-hover;
-    @apply divide-y border-[1px] border-surface-800-200 divide-surface-800-200 preset-filled-surface-900-100;
+    @apply border-surface-800-200 divide-surface-800-200 preset-filled-surface-900-100 divide-y border-[1px];
   }
   header {
     > img {

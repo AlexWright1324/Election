@@ -29,7 +29,7 @@
   const { value, errors, constraints } = formFieldProxy(superform, field) satisfies FormFieldProxy<string>
 </script>
 
-<label class="block w-0 min-w-full pb-2 pt-2">
+<label class="block w-0 min-w-full pt-1 pb-1">
   <Label {name} errors={$errors} />
   <input
     type="hidden"

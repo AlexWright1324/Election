@@ -23,7 +23,7 @@
   const proxyDate = dateProxy(superform, field, { format: "datetime-local" })
 </script>
 
-<label class="label pb-2 pt-2">
+<label class="label pt-1 pb-1">
   <Label {name} errors={$errors} />
   <input
     class="input"

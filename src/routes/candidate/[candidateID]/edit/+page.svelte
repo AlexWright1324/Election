@@ -1,6 +1,6 @@
 <script lang="ts">
+  import Discard, { taintedMessage } from "$lib/components/modals/Discard.svelte"
   import LeaveModal from "$lib/components/modals/Leave.svelte"
-  import Unsaved, { taintedMessage } from "$lib/components/modals/Unsaved.svelte"
 
   import { getCandidateCoverImage } from "$lib/client/store"
   import { ImageField, MarkdownField } from "$lib/components/forms/index"
@@ -21,7 +21,7 @@
   const { enhance, isTainted, tainted } = superform
 </script>
 
-<Unsaved />
+<Discard />
 
 <div class="flex flex-wrap gap-2">
   <button form="update" type="submit" class="btn preset-filled-primary-500" disabled={!isTainted($tainted)}>
@@ -31,7 +31,7 @@
 </div>
 
 <form
-  class="flex flex-wrap gap-4 grow"
+  class="flex grow flex-wrap gap-4"
   id="update"
   method="post"
   action="?/update"

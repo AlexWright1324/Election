@@ -11,12 +11,14 @@
 
 <a class="btn relative" {href} aria-current={page.url.pathname === href ? "page" : undefined}>
   {#if badge}
-    <span class="badge-icon preset-filled-primary-500 absolute -right-2 -top-2">{badge}</span>
+    <span class="badge-icon preset-filled-primary-500 absolute -top-2 -right-2">{badge}</span>
   {/if}
   {@render children?.()}
 </a>
 
-<style>
+<style lang="postcss">
+  @reference "$lib/stylesheets/app.css";
+
   a {
     &[aria-current="page"] {
       @apply preset-tonal-primary;

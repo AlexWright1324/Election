@@ -32,7 +32,7 @@
   const { value, errors, constraints } = formFieldProxy(superform, field) satisfies FormFieldProxy<boolean>
 </script>
 
-<label class="label flex max-w-full justify-between gap-2 border-b pb-2 pt-2 border-b-surface-300-700">
+<label class="label border-b-surface-300-700 flex max-w-full justify-between gap-2 border-b pt-2 pb-2">
   <div>
     <Label {name} errors={$errors} />
     <div class="label-text opacity-80">
@@ -49,20 +49,12 @@
     </div>
   </div>
   <div>
-    <input
-      name={field}
-      type="hidden"
-      aria-invalid={$errors ? "true" : undefined}
-      bind:value={$value}
-      {...$constraints}
-      {...restProps}
-    />
     <Switch name={field} bind:checked={$value}>
       {#snippet inactiveChild()}
-        <X size="1em" />
+        <X size="14" />
       {/snippet}
       {#snippet activeChild()}
-        <Check size="1em" />
+        <Check size="14" />
       {/snippet}
     </Switch>
   </div>

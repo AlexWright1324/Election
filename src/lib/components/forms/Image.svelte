@@ -25,9 +25,9 @@
   const file = fileProxy(superform, field)
 </script>
 
-<label class="label pb-2 pt-2">
+<label class="label pt-1 pb-1">
   <Label {name} errors={$errors} />
-  <div class="banner-image-container p-[1px] preset-outlined-surface-300-700">
+  <div class="banner-image-container preset-outlined-surface-300-700 p-[1px]">
     <img class="banner-image" {src} alt={name} />
   </div>
   <input

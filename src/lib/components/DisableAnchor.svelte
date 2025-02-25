@@ -33,7 +33,9 @@
   {/if}
 </a>
 
-<style>
+<style lang="postcss">
+  @reference "$lib/stylesheets/app.css";
+
   .disabled {
     @apply preset-outlined-surface-400-600;
     pointer-events: none;

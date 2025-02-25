@@ -290,7 +290,8 @@
   </output>
 {/if}
 
-<style>
+<style lang="postcss">
+  @reference "$lib/stylesheets/app.css";
   .svelte-progress-bar {
     position: fixed;
     top: 0;
