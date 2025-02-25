@@ -19,22 +19,19 @@
   } = $props()
 </script>
 
-<Modal
-  triggerBase={trigger ? "btn " + triggerBase : "hidden"}
-  contentBase="card bg-surface-100-900 shadow-xl max-w-sm w-full p-4"
-  {trigger}
-  bind:open
->
+<Modal triggerBase={trigger ? "btn " + triggerBase : "hidden"} {trigger} bind:open>
   {#snippet content()}
-    <header class="flex justify-between">
-      <h2 class="h2">{header}</h2>
-    </header>
-    <article>
-      <p>{text}</p>
+    <article class="bg-surface-50-950 w-full max-w-sm rounded-xl border shadow-xl">
+      <header class="bg-surface-100-900 flex justify-between p-4">
+        <h5 class="h5">{header}</h5>
+      </header>
+      <main class="border-b p-4">
+        <p>{text}</p>
+      </main>
+      <footer class="flex justify-end gap-2 p-4">
+        <button type="button" class="btn preset-tonal" onclick={() => (open = false)}>Cancel</button>
+        {@render buttons?.()}
+      </footer>
     </article>
-    <footer class="flex justify-between mt-4">
-      <button type="button" class="btn preset-tonal" onclick={() => (open = false)}>Cancel</button>
-      {@render buttons?.()}
-    </footer>
   {/snippet}
 </Modal>

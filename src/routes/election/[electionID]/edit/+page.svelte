@@ -5,6 +5,7 @@
   import { getElectionCoverImage } from "$lib/client/store"
   import { superForm } from "$lib/client/superform"
   import { DateTimeField, ImageField, MarkdownField, NumberField, SwitchField, TextField } from "$lib/components/forms"
+  import { DisableBox } from "$lib/components/forms/layout"
 
   import { updateSchema } from "./schema"
 
@@ -41,38 +42,40 @@
 >
   <aside class="w-full lg:w-96">
     <h3 class="h3">Settings</h3>
-    <SwitchField {superform} field="published" name="Publish Election">
-      {#snippet enabledText()}
-        This election is published and visible to everyone.
-      {/snippet}
-      {#snippet disabledText()}
-        This election is not published and is only visible to admins.
-      {/snippet}
-    </SwitchField>
-    <SwitchField {superform} field="membersOnly" name="Members Only">
-      {#snippet enabledText()}
-        Only members can vote in this election.
-      {/snippet}
-      {#snippet disabledText()}
-        Everyone can vote in this election.
-      {/snippet}
-    </SwitchField>
-    <SwitchField {superform} field="ronEnabled" name="RON Enabled">
-      {#snippet enabledText()}
-        Re-Open Nominations are enabled.
-      {/snippet}
-      {#snippet disabledText()}
-        Re-Open Nominations are disabled.
-      {/snippet}
-    </SwitchField>
-    <SwitchField {superform} field="motionEnabled" name="Motions Enabled">
-      {#snippet enabledText()}
-        Motions can be created.
-      {/snippet}
-      {#snippet disabledText()}
-        Motions cannot be created.
-      {/snippet}
-    </SwitchField>
+    <DisableBox disabled={true} disabledText="Election is ongoing, settings cannot be changed.">
+      <SwitchField {superform} field="published" name="Publish Election">
+        {#snippet enabledText()}
+          This election is published and visible to everyone.
+        {/snippet}
+        {#snippet disabledText()}
+          This election is not published and is only visible to admins.
+        {/snippet}
+      </SwitchField>
+      <SwitchField {superform} field="membersOnly" name="Members Only">
+        {#snippet enabledText()}
+          Only members can vote in this election.
+        {/snippet}
+        {#snippet disabledText()}
+          Everyone can vote in this election.
+        {/snippet}
+      </SwitchField>
+      <SwitchField {superform} field="ronEnabled" name="RON Enabled">
+        {#snippet enabledText()}
+          Re-Open Nominations are enabled.
+        {/snippet}
+        {#snippet disabledText()}
+          Re-Open Nominations are disabled.
+        {/snippet}
+      </SwitchField>
+      <SwitchField {superform} field="motionEnabled" name="Motions Enabled">
+        {#snippet enabledText()}
+          Motions can be created.
+        {/snippet}
+        {#snippet disabledText()}
+          Motions cannot be created.
+        {/snippet}
+      </SwitchField>
+    </DisableBox>
     <ImageField
       {superform}
       field="image"
