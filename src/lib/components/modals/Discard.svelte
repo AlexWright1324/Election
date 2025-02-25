@@ -21,7 +21,7 @@
   contentBase="preset-filled-surface-100-900 preset-outlined-surface-200-800 w-full max-w-lg overflow-hidden rounded-xl shadow-xl"
 >
   {#snippet content()}
-    <header class="bg-surface-200-800 flex items-center justify-between p-4 pt-3 pb-2 text-lg font-semibold">
+    <header class="bg-surface-200-800 flex items-center justify-between p-4 pt-3 pr-1 pb-2 text-lg font-semibold">
       <p>Discard unsaved changes?</p>
       <button type="button" class="btn text-lg" onclick={() => (open = false)}>
         <X size="1em" />

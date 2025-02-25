@@ -74,7 +74,7 @@ export const actions = {
 
       // TODO: Decide if election is locked after voting starts (disregard ending)
       let data: Prisma.ElectionUpdateInput = initialData
-      if (election.start && election.end && election.start < new Date() && election.end > new Date()) {
+      const addData = () => {
         data = {
           ...initialData,
           start: form.data.start,
@@ -87,6 +87,13 @@ export const actions = {
           motionEnabled: form.data.motionEnabled,
           published: form.data.published,
         } satisfies typeof form.data // Check all fields are present
+      }
+      if (election.start && election.end) {
+        if (election.start < new Date() && election.end > new Date()) {
+          addData()
+        }
+      } else {
+        addData()
       }
 
       await PrismaClient.$transaction(async (tx) => {
