@@ -1,4 +1,4 @@
-import { MotionVoteType } from "@prisma/client"
+//import { MotionVoteType } from "@prisma/client"
 import { z } from "zod"
 
 const roleBase = z.object({
@@ -17,6 +17,12 @@ export const clientVoteSchema = z.object({
   ),
   motions: z.array(motionBase),
 })
+
+enum MotionVoteType {
+  FOR = "FOR",
+  AGAINST = "AGAINST",
+  ABSTAIN = "ABSTAIN",
+}
 
 export const motionVote = [
   [MotionVoteType.FOR, "For"],
