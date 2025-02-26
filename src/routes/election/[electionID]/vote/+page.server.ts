@@ -1,10 +1,11 @@
+import { route } from "$lib/ROUTES"
 import { requireAuth, requireElection } from "$lib/server/auth"
 import { canVote } from "$lib/server/checks"
 import { Prisma, PrismaClient } from "$lib/server/db"
 
 import { clientVoteSchema, serverVoteSchema } from "./schema"
 
-import { error } from "@sveltejs/kit"
+import { error, redirect } from "@sveltejs/kit"
 import { superValidate, fail, setError, message } from "sveltekit-superforms"
 import { zod } from "sveltekit-superforms/adapters"
 
@@ -92,32 +93,45 @@ export const actions = {
           vote: vote.vote,
         })) as Prisma.MotionVoteCreateManyBallotInput[]
 
-        await PrismaClient.election.update({
-          where: { id: election.id },
-          data: {
-            voters: {
-              create: {
-                userID,
-              },
+        const ballot = await PrismaClient.$transaction(async (tx) => {
+          await tx.voter.create({
+            data: {
+              userID,
+              electionID: election.id,
             },
-            ballots: {
-              create: {
-                candidateVotes: {
-                  createMany: {
-                    data: candidateVotes,
-                  } as Prisma.CandidateVoteCreateManyBallotInputEnvelope,
-                },
-                motionVotes: {
-                  createMany: {
-                    data: motionVotes,
-                  } as Prisma.MotionVoteCreateManyBallotInputEnvelope,
+          })
+
+          return await tx.ballot.create({
+            select: {
+              signature: true,
+            },
+            data: {
+              election: {
+                connect: {
+                  id: election.id,
                 },
               },
+              candidateVotes: {
+                createMany: {
+                  data: candidateVotes,
+                } as Prisma.CandidateVoteCreateManyBallotInputEnvelope,
+              },
+              motionVotes: {
+                createMany: {
+                  data: motionVotes,
+                } as Prisma.MotionVoteCreateManyBallotInputEnvelope,
+              },
             },
-          },
+          })
         })
 
-        return message(form, "Vote submitted")
+        return redirect(
+          303,
+          route("/election/[electionID]/vote/confirm", {
+            electionID: election.id,
+            signature: ballot.signature,
+          }),
+        )
       },
     ),
   ),

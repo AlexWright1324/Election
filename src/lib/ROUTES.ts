@@ -38,6 +38,9 @@ const PAGES = {
   "/election/[electionID]/vote": (params: { electionID: string | number }) => {
     return `/election/${params["electionID"]}/vote`
   },
+  "/election/[electionID]/vote/confirm": (params: { electionID: string | number; signature: string }) => {
+    return `/election/${params["electionID"]}/vote/confirm${appendSp({ signature: params["signature"] })}`
+  },
   "/motion/[motionID]": (params: { motionID: string | number }) => {
     return `/motion/${params["motionID"]}`
   },
@@ -243,6 +246,7 @@ export type KIT_ROUTES = {
     "/election/[electionID]/edit/roles": "electionID"
     "/election/[electionID]/results": "electionID"
     "/election/[electionID]/vote": "electionID"
+    "/election/[electionID]/vote/confirm": "electionID"
     "/motion/[motionID]": "motionID"
     "/motion/[motionID]/edit": "motionID"
     "/motion/[motionID]/edit/requests": "motionID"
@@ -272,5 +276,5 @@ export type KIT_ROUTES = {
     "default /signout": never
   }
   LINKS: Record<string, never>
-  Params: { candidateID: never; electionID: never; motionID: never; path: never }
+  Params: { candidateID: never; electionID: never; signature: never; motionID: never; path: never }
 }
