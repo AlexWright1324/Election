@@ -79,7 +79,7 @@
     </Accordion.Item>
   </Accordion>
 {:else}
-  <p>No roles!</p>
+  <p>No roles</p>
 {/each}
 
 <h2 class="h2">Motions</h2>

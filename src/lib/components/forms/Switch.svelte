@@ -23,7 +23,7 @@
   }: {
     superform: SuperForm<T>
     field: FormPathLeaves<T, boolean>
-    name: string
+    name?: string
     children?: Snippet
     enabledText?: Snippet
     disabledText?: Snippet
@@ -32,7 +32,7 @@
   const { value, errors, constraints } = formFieldProxy(superform, field) satisfies FormFieldProxy<boolean>
 </script>
 
-<label class="label border-b-surface-300-700 flex max-w-full justify-between gap-2 border-b pt-2 pb-2">
+<label class="label border-b-surface-300-700 flex max-w-full items-center justify-between gap-2 border-b pt-2 pb-2">
   <div>
     <Label {name} errors={$errors} />
     <div class="label-text opacity-80">

@@ -20,8 +20,14 @@
 {/if}
 
 <article class="flex flex-wrap gap-x-4">
-  <aside class="max-w-xs mb-2">
-    <img src={getCandidateCoverImage(data.candidate.role.election.id, data.candidate.id)} alt="Candidate Banner" />
+  <aside class="mb-2 max-w-xs">
+    <div class="banner-image-container">
+      <img
+        class="banner-image"
+        src={getCandidateCoverImage(data.candidate.role.election.id, data.candidate.id)}
+        alt="Candidate Banner"
+      />
+    </div>
     <h3 class="h3">Members</h3>
     <p>
       {seperateJoin(data.candidate.users.map((user) => user.name))}

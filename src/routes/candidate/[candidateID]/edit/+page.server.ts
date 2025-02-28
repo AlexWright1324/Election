@@ -1,3 +1,4 @@
+import { UserCanEditCandidate } from "$lib/client/checks.js"
 import { zImage } from "$lib/client/schema"
 import { requireCandidateAdmin } from "$lib/server/auth"
 import { PrismaClient } from "$lib/server/db"
@@ -37,16 +38,25 @@ export const load = requireCandidateAdmin(
 
 export const actions = {
   update: requireCandidateAdmin(
-    { id: true, role: { select: { election: { select: { id: true, candidateMaxDescription: true } } } } },
-    async ({ request, candidate }) => {
+    {
+      id: true,
+      users: { select: { userID: true } },
+      role: { select: { election: { select: { id: true, start: true, candidateMaxDescription: true } } } },
+    },
+    async ({ request, candidate, locals }) => {
       const form = await superValidate(request, zod(editFormSchema))
 
       if (!form.valid) {
         return fail(400, { form })
       }
 
+      if (!UserCanEditCandidate(candidate, locals.session?.user, new Date())) {
+        return setError(form, "", "You can't edit this candidate")
+      }
+
       if (form.data.description.length > candidate.role.election.candidateMaxDescription) {
-        return setError(form, "description", "Description is longer than allowed")
+        const diff = form.data.description.length - candidate.role.election.candidateMaxDescription
+        return setError(form, "description", `Description is ${diff} characters longer than allowed`)
       }
 
       await PrismaClient.candidate.update({
@@ -68,19 +78,25 @@ export const actions = {
     },
   ),
   leave: requireCandidateAdmin(
-    { id: true, role: { select: { election: { select: { id: true } } } } },
+    {
+      id: true,
+      users: { select: { userID: true } },
+      role: { select: { election: { select: { id: true, start: true } } } },
+    },
     async ({ candidate, userID }) => {
-      await PrismaClient.$transaction(async (tx) => {
-        await tx.candidate.update({
-          where: { id: candidate.id },
-          data: {
-            users: {
-              disconnect: {
-                userID: userID,
-              },
+      if (!UserCanEditCandidate(candidate, userID, new Date())) {
+        return fail(400, { message: "You can't leave this candidate" })
+      }
+
+      await PrismaClient.candidate.update({
+        where: { id: candidate.id },
+        data: {
+          users: {
+            disconnect: {
+              userID: userID,
             },
           },
-        })
+        },
       })
 
       return redirect(303, `/election/${candidate.role.election.id}`)

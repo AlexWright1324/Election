@@ -13,7 +13,18 @@ export const ElectionIsVisible = (userID: string | undefined): Prisma.ElectionWh
   ({
     OR: [
       {
-        published: true,
+        start: {
+          not: null,
+        },
+        end: {
+          not: null,
+        },
+        nominationsStart: {
+          not: null,
+        },
+        nominationsEnd: {
+          not: null,
+        },
       },
       isElectionAdmin(userID),
     ],

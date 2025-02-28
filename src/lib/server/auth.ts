@@ -10,18 +10,15 @@ import {
 } from "$lib/server/checks"
 import { PrismaClient, type Prisma } from "$lib/server/db"
 
-import { SvelteKitAuth } from "@auth/sveltekit"
+import { SvelteKitAuth, type Session } from "@auth/sveltekit"
 import Keycloak from "@auth/sveltekit/providers/keycloak"
 import { error, fail, type RequestEvent, type ServerLoadEvent } from "@sveltejs/kit"
 
 declare module "@auth/sveltekit" {
   interface Session {
     user: {
-      name: string
-      email: string
-      id: string
-      groups: string[]
       userID: string
+      admin: boolean
     }
   }
 
@@ -34,9 +31,8 @@ declare module "@auth/sveltekit" {
 
 declare module "@auth/core/jwt" {
   interface JWT {
-    sub: string
-    groups: string[]
-    uni_id: string
+    userID: string
+    admin: boolean
   }
 }
 
@@ -44,21 +40,19 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
   trustHost: true,
   providers: [Keycloak],
   callbacks: {
-    async session({ session, token }) {
-      session.user.id = token.sub
-      session.user.groups = token.groups
-      session.user.userID = token.uni_id
-
-      return session
-    },
+    // From Keycloak
     async jwt({ token, profile }) {
       if (!profile) return token
-      if (!profile.sub) return token
 
-      token.sub = profile.sub
-      token.groups = profile.groups
-      token.uni_id = profile.uni_id
+      token.admin = profile.groups.includes("exec")
+      token.userID = profile.uni_id
       return token
+    },
+    async session({ session, token }) {
+      session.user.userID = token.userID
+      session.user.admin = token.admin
+
+      return session as Session
     },
     async signIn({ profile }) {
       if (!profile?.uni_id || !profile?.name) {

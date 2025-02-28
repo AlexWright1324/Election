@@ -9,7 +9,6 @@
       end: Date | null
       nominationsStart: Date | null
       nominationsEnd: Date | null
-      published: boolean
       membersOnly: boolean
     }
   } = $props()
@@ -35,9 +34,6 @@
     {:else}
       <p>Election is over</p>
     {/if}
-  {/if}
-  {#if !election.published}
-    <p>Election is unpublished</p>
   {/if}
 
   {#if election.membersOnly}

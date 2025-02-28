@@ -1,3 +1,4 @@
+import { UserCanCreateMotion } from "$lib/client/checks.js"
 import { emptySchema } from "$lib/client/schema"
 import { requireAuth, requireElection } from "$lib/server/auth"
 import { canSignup } from "$lib/server/checks"
@@ -6,7 +7,7 @@ import { Prisma, PrismaClient } from "$lib/server/db"
 import { redirect } from "@sveltejs/kit"
 import { fail, superValidate, setError } from "sveltekit-superforms"
 import { zod } from "sveltekit-superforms/adapters"
-import { z } from "zod"
+import { set, z } from "zod"
 
 const candidateSignupSchema = z.object({
   roleID: z.number(),
@@ -50,6 +51,21 @@ export const load = requireElection(
       select: {
         id: true,
         name: true,
+        proposer: {
+          select: {
+            name: true,
+          },
+        },
+        seconders: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        seconders: {
+          _count: "desc",
+        },
       },
     },
   },
@@ -134,10 +150,17 @@ export const actions = {
       {
         id: true,
         motionDefaultDescription: true,
+        nominationsStart: true,
+        nominationsEnd: true,
+        motionEnabled: true,
       },
       async ({ request, election, userID }) => {
         const form = await superValidate(request, zod(emptySchema))
         if (!form.valid) return fail(400, { form })
+
+        if (!UserCanCreateMotion(election, userID, new Date())) {
+          return setError(form, "", "You cannot create a motion for this election")
+        }
 
         try {
           const motion = await PrismaClient.motion.create({

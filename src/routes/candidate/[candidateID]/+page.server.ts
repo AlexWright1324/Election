@@ -1,3 +1,4 @@
+import { UserCanJoinCandidate } from "$lib/client/checks.js"
 import { emptySchema } from "$lib/client/schema"
 import { requireAuth, requireCandidate } from "$lib/server/auth"
 import { Prisma, PrismaClient } from "$lib/server/db"
@@ -54,14 +55,16 @@ export const actions = {
             id: true,
             election: {
               select: {
+                nominationsStart: true,
+                nominationsEnd: true,
                 candidateMaxUsers: true,
               },
             },
           },
         },
-        _count: {
+        users: {
           select: {
-            users: true,
+            userID: true,
           },
         },
       },
@@ -83,9 +86,8 @@ export const actions = {
             return setError(form, "", "You are already a candidate for this role")
           }
 
-          // Check if adding this user would exceed the max number of candidates in a joint candidancy
-          if (candidate.role.election.candidateMaxUsers > 1 + candidate._count.users) {
-            return setError(form, "", "This joint candidancy already has the maximum number of users")
+          if (!UserCanJoinCandidate(candidate, userID, new Date())) {
+            return setError(form, "", "You can't join this candidate")
           }
 
           try {

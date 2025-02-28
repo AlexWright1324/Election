@@ -2,7 +2,7 @@
   import { Github } from "lucide-svelte"
 </script>
 
-<hr class="mx-auto h-[1px] w-[95%] border-none bg-gradient-to-r from-transparent via-surface-800 to-transparent" />
+<hr class="via-surface-800 mx-auto h-[1px] w-[95%] border-none bg-gradient-to-r from-transparent to-transparent" />
 
 <footer class="flex flex-wrap justify-center p-2">
   <a class="btn" href="https://uwcs.co.uk">UWCS</a>

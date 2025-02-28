@@ -1,11 +1,12 @@
 <script lang="ts">
+  import { superForm } from "$lib/client/superform"
   import { TextField } from "$lib/components/forms/index"
 
   import { enhance } from "$app/forms"
-  import { superForm } from "sveltekit-superforms/client"
+  import { getContext } from "svelte"
 
   let { data } = $props()
-  const inviteSuperform = superForm(data.inviteForm)
+  const inviteSuperform = superForm(getContext("toast"), data.inviteForm)
   const { enhance: inviteEnhance } = inviteSuperform
 </script>
 

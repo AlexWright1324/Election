@@ -9,9 +9,7 @@
   {@const url = `/election/${data.election.id}`}
   <Tabs name="Election Admin">
     <TabItem href={url}>Preview</TabItem>
-    <TabItem href="{url}/edit">Edit</TabItem>
-    <TabItem href="{url}/edit/roles">Roles</TabItem>
-    <TabItem href="{url}/edit/members">Members</TabItem>
+    <TabItem href="{url}/edit" nested>Edit</TabItem>
     <TabItem href="{url}/results">Results</TabItem>
   </Tabs>
 {/if}

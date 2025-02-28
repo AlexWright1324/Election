@@ -11,32 +11,25 @@ declare global {
     // interface Platform {}
   }
   namespace PrismaJson {
-    type Results = {
-      roles: {
+    type RoleResult = {
+      droopQuota: number
+      winners: {
+        id: string
         name: string
-        seatsToFill: number
-        droopQuota: number
-        winners: {
+      }[]
+      rounds: {
+        candidates: {
           id: string
           name: string
-        }[]
-        rounds: {
-          candidates: {
-            name: string
-            status?: "winner" | "eliminated"
-            tally?: number
-            id: string
-          }[]
+          status?: "winner" | "eliminated"
+          tally?: number
         }[]
       }[]
-      motions: {
-        name: string
-        results: {
-          for: number
-          against: number
-          abstain: number
-        }
-      }[]
+    }
+    type MotionResult = {
+      for: number
+      against: number
+      abstain: number
     }
   }
 }

@@ -5,28 +5,47 @@
 
   import { getElectionCoverImage } from "$lib/client/store"
   import { superForm } from "$lib/client/superform"
-  import { DateTimeField, ImageField, MarkdownField, NumberField, SwitchField, TextField } from "$lib/components/forms"
+  import { DateTimeField, ImageField, MarkdownField, SwitchField, TextField } from "$lib/components/forms"
   import { DisableBox } from "$lib/components/forms/layout"
 
-  import { updateSchema } from "./schema"
+  import { determineSchema } from "./schema"
 
   import { getContext } from "svelte"
-  import { zodClient } from "sveltekit-superforms/adapters"
+  import { zod } from "sveltekit-superforms/adapters"
+  import { ZodEffects } from "zod"
 
   let { data } = $props()
 
   const superform = superForm(getContext("toast"), data.updateForm, {
     resetForm: false,
-    validators: zodClient(updateSchema),
     taintedMessage,
   })
 
-  let votingNow = $derived.by(() => {
-    if (!(data.election.start && data.election.end)) return false
-    return data.election.start < date.now && data.election.end > date.now
+  const bypass: {
+    value: boolean
+  } = getContext("bypass")
+
+  let {
+    schema,
+    status: disabledText,
+    ignore: ignoredFields,
+  } = $derived(determineSchema(date.now, data.election, bypass.value))
+  $effect(() => {
+    superform.options.validators = zod(schema)
   })
 
-  const { form, enhance, isTainted, tainted } = superform
+  const fieldsInSchema = (fields: string[]) => {
+    let keys
+    if (schema instanceof ZodEffects) {
+      keys = Object.keys(schema._def.schema.shape)
+    } else {
+      keys = Object.keys(schema.shape)
+    }
+    keys = keys.filter((key) => !ignoredFields?.includes(key))
+    return fields.every((field) => keys.includes(field))
+  }
+
+  const { enhance, isTainted, tainted } = superform
 </script>
 
 <Discard />
@@ -43,15 +62,7 @@
     <button type="submit" class="btn preset-filled-primary-500 w-full" disabled={!isTainted($tainted)}>
       Update Election
     </button>
-    <DisableBox disabled={votingNow} disabledText="Election is ongoing">
-      <SwitchField {superform} field="published" name="Publish Election">
-        {#snippet enabledText()}
-          This election is published and visible to everyone.
-        {/snippet}
-        {#snippet disabledText()}
-          This election is not published and is only visible to admins.
-        {/snippet}
-      </SwitchField>
+    <DisableBox disabled={!fieldsInSchema(["membersOnly", "ronEnabled", "motionEnabled"])} {disabledText}>
       <SwitchField {superform} field="membersOnly" name="Members Only">
         {#snippet enabledText()}
           Only members can vote in this election.
@@ -87,24 +98,31 @@
   <main class="flex-1">
     <TextField {superform} field="name" name="Title" />
     <MarkdownField {superform} field="description" name="Description" />
-    <DateTimeField {superform} field="nominationsStart" name="Nominations Start Date" />
-    <DateTimeField {superform} field="nominationsEnd" name="Nominations End Date" />
-    <DisableBox disabled={votingNow} disabledText="Election is ongoing">
-      <DateTimeField {superform} field="start" name="Start Date" />
-      <DateTimeField {superform} field="end" name="End Date" />
-    </DisableBox>
-
-    <h4 class="h4">Candidate Settings</h4>
-
-    <NumberField {superform} field="candidateMaxUsers" name="Max Users in a Candidancy" />
-    <NumberField {superform} field="candidateMaxDescription" name="Max Characters in Candidate Description" />
-    <MarkdownField {superform} field="candidateDefaultDescription" name="Candidate Default Description" />
-
-    {#if $form.motionEnabled}
-      <h4 class="h4">Motion Settings</h4>
-      <NumberField {superform} field="motionMaxDescription" name="Max Characters in Motion Description" />
-      <NumberField {superform} field="motionMaxSeconders" name="Max Seconders" />
-      <MarkdownField {superform} field="motionDefaultDescription" name="Motion Default Description" />
+    {#if !fieldsInSchema( ["nominationsStart", "nominationsEnd"], ) && !fieldsInSchema( ["start"], ) && !fieldsInSchema( ["end"], )}
+      <DisableBox disabled {disabledText}>
+        <DateTimeField {superform} field="nominationsStart" name="Nominations Start Date" />
+        <DateTimeField {superform} field="nominationsEnd" name="Nominations End Date" />
+        <DateTimeField {superform} field="start" name="Start Date" />
+        <DateTimeField {superform} field="end" name="End Date" />
+      </DisableBox>
+    {:else}
+      <DisableBox disabled={!fieldsInSchema(["nominationsStart", "nominationsEnd"])} {disabledText}>
+        <DateTimeField {superform} field="nominationsStart" name="Nominations Start Date" />
+        <DateTimeField {superform} field="nominationsEnd" name="Nominations End Date" />
+      </DisableBox>
+      {#if !fieldsInSchema(["start"]) && !fieldsInSchema(["end"])}
+        <DisableBox disabled={true} {disabledText}>
+          <DateTimeField {superform} field="start" name="Start Date" />
+          <DateTimeField {superform} field="end" name="End Date" />
+        </DisableBox>
+      {:else}
+        <DisableBox disabled={!fieldsInSchema(["start"])} {disabledText}>
+          <DateTimeField {superform} field="start" name="Start Date" />
+        </DisableBox>
+        <DisableBox disabled={!fieldsInSchema(["end"])} {disabledText}>
+          <DateTimeField {superform} field="end" name="End Date" />
+        </DisableBox>
+      {/if}
     {/if}
   </main>
 </form>

@@ -1,9 +1,11 @@
 <script lang="ts">
+  import { date } from "$lib/client/time.svelte"
   import Card from "$lib/components/Card.svelte"
   import DisableAnchor from "$lib/components/DisableAnchor.svelte"
 
   import { route } from "$lib/ROUTES"
   import { carta } from "$lib/client/carta"
+  import { UserCanCreateCandidate, UserCanCreateMotion } from "$lib/client/checks"
   import { seperateJoin } from "$lib/client/separate"
   import { getCandidateCoverImage, getElectionCoverImage } from "$lib/client/store"
   import { superForm } from "$lib/client/superform"
@@ -54,7 +56,7 @@
 {#each data.election.roles as role}
   <div class="flex flex-wrap items-center justify-between gap-x-2">
     <h3 class="h3">{role.name}</h3>
-    {#if !role.candidates.some((c) => c.users.some((u) => u)) && data.election.canSignup}
+    {#if !role.candidates.some( (c) => c.users.some((u) => u), ) && UserCanCreateCandidate(data.election, data.session?.user, date.now)}
       <form action="?/candidateSignup" method="post" use:candidateSignupEnhance>
         <input type="hidden" name="roleID" value={role.id} />
         <button class="btn preset-tonal-primary" type="submit">Become a Candidate</button>
@@ -64,13 +66,13 @@
   {#if role.seatsToFill > 1}
     <p class="text-primary-500">{role.seatsToFill} Seats to fill</p>
   {/if}
-  <div class="divide-y-2 divide-surface-500">
+  <div class="divide-surface-500 divide-y-2">
     {#each role.candidates as candidate}
       <a
         href={route("/candidate/[candidateID]", { candidateID: candidate.id })}
-        class="flex flex-wrap items-center gap-x-10 rounded border-2 border-surface-800 p-2 transition-all hover:scale-[1.01]"
+        class="border-surface-800 mt-2 mb-2 flex flex-wrap items-center gap-x-10 rounded border-2 p-2 transition-all hover:scale-[1.01]"
       >
-        <div class="aspect-square w-32">
+        <div class="banner-image-container max-w-32">
           <img
             class="banner-image"
             src={getCandidateCoverImage(data.election.id, candidate.id, candidate.imageVersion)}
@@ -92,26 +94,36 @@
 <hr class="hr mt-2" />
 
 {#if data.election.motionEnabled}
-  <div class="flex flex-wrap items-center justify-between gap-x-2">
+  <div class="mb-2 flex flex-wrap items-center justify-between gap-x-2">
     <h2 class="h2">Motions</h2>
-    {#if data.election.canSignup}
+    {#if UserCanCreateMotion(data.election, data.session?.user, date.now)}
       <form action="?/createMotion" method="post" use:createMotionEnhance>
         <button class="btn preset-tonal-primary" type="submit">Create a Motion</button>
       </form>
     {/if}
   </div>
-  <ul>
+  <div class="flex flex-col gap-2">
     {#each data.election.motions as motion}
-      <li>
-        <a
-          href={route("/motion/[motionID]", { motionID: motion.id })}
-          class="flex flex-wrap items-center gap-x-10 rounded border-2 border-surface-800 p-2 transition-all hover:scale-[1.01]"
-        >
-          <h4 class="h4">{motion.name}</h4>
-        </a>
-      </li>
+      <a
+        href={route("/motion/[motionID]", { motionID: motion.id })}
+        class="border-surface-800 flex flex-wrap items-center gap-x-10 rounded border-2 p-2 transition-all hover:scale-[1.01]"
+      >
+        <h4 class="h4">{motion.name}</h4>
+        <div>
+          <span class="font-bold">Proposed by:</span>
+          <span>{motion.proposer.name}</span>
+        </div>
+        <div>
+          {#if motion.seconders.length > 0}
+            <span class="font-bold">Seconded by:</span>
+            <span>{seperateJoin(motion.seconders.map((s) => s.name))}</span>
+          {:else}
+            <span class="font-bold">No Seconders</span>
+          {/if}
+        </div>
+      </a>
     {:else}
       <p>No Motions</p>
     {/each}
-  </ul>
+  </div>
 {/if}

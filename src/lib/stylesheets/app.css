@@ -28,7 +28,7 @@ body {
   }
 }
 
-@utility btn {
+@utility btn-hover {
   @variant not-disabled {
     @variant hover {
       filter: brightness(105%);

@@ -16,7 +16,7 @@
   }: {
     superform: SuperForm<T>
     field: FormPathLeaves<T, number>
-    name: string
+    name?: string
   } & HTMLInputAttributes = $props()
 
   const { value, errors, constraints } = formFieldProxy(superform, field) satisfies FormFieldProxy<number>

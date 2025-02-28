@@ -17,7 +17,7 @@
   }: {
     superform: SuperForm<T>
     field: FormPathLeaves<T>
-    name: string
+    name?: string
     src: string
   } & HTMLInputAttributes = $props()
 

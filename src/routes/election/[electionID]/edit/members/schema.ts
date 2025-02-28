@@ -8,11 +8,6 @@ export const updateApiKeySchema = z.object({
 
 export const emptySchema = z.object({})
 
-export const updateMembersSchema = z.object({
-  members: z.array(
-    z.object({
-      userID: z.string(),
-      name: z.string(),
-    }),
-  ),
+export const editMemberSchema = z.object({
+  userID: z.string().nonempty(),
 })

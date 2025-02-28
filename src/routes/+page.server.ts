@@ -1,5 +1,6 @@
 import { emptySchema } from "$lib/client/schema"
 import { requireAuth } from "$lib/server/auth"
+import { ElectionIsVisible, isElectionAdmin } from "$lib/server/checks"
 import { Prisma, PrismaClient } from "$lib/server/db"
 
 import { redirect } from "@sveltejs/kit"
@@ -14,25 +15,20 @@ export const load = async ({ locals }) => {
     end: true,
     nominationsStart: true,
     nominationsEnd: true,
-    published: true,
     imageVersion: true,
     membersOnly: true,
   }
 
   const elections = await PrismaClient.election.findMany({
     where: {
-      published: true,
+      AND: [ElectionIsVisible(locals.session?.user.userID)],
     },
     select,
   })
 
   const managedElections = await PrismaClient.election.findMany({
     where: {
-      admins: {
-        some: {
-          userID: locals.session?.user.userID ?? "",
-        },
-      },
+      AND: [isElectionAdmin(locals.session?.user.userID)],
     },
     select,
   })

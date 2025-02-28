@@ -2,7 +2,8 @@ import { requireElectionAdmin } from "$lib/server/auth"
 import { PrismaClient } from "$lib/server/db"
 import { getMembers } from "$lib/server/suapi"
 
-import { emptySchema, updateApiKeySchema, updateMembersSchema } from "./schema"
+import { emptySchema, updateApiKeySchema, editMemberSchema } from "./schema"
+
 import { fail, message, setError, superValidate } from "sveltekit-superforms"
 import { zod } from "sveltekit-superforms/adapters"
 
@@ -18,9 +19,10 @@ export const load = requireElectionAdmin(
   },
   async ({ election }) => {
     return {
+      members: election.members,
       updateApiKeyForm: await superValidate({ apiKey: election.apiKey }, zod(updateApiKeySchema)),
-      updateMembersForm: await superValidate({ members: election.members }, zod(updateMembersSchema)),
       populateMembersForm: await superValidate(zod(emptySchema)),
+      editMemberForm: await superValidate(zod(editMemberSchema)),
     }
   },
 )
@@ -33,6 +35,8 @@ export const actions = {
       return fail(400, { form })
     }
 
+    // TODO: TEST APIKEY
+
     await PrismaClient.election.update({
       where: { id: election.id },
       data: {
@@ -42,24 +46,41 @@ export const actions = {
 
     return message(form, "API Key updated")
   }),
-  populateMembers: requireElectionAdmin({ apiKey: true }, async ({ request, election }) => {
+  populateMembers: requireElectionAdmin({ id: true, apiKey: true }, async ({ request, election }) => {
     const form = await superValidate(request, zod(emptySchema))
 
     if (!form.valid) {
       return fail(400, { form })
     }
 
+    let members
     try {
-      const members = await getMembers(election.apiKey)
-      return { form, APIMembers: members }
+      members = await getMembers(election.apiKey)
     } catch (error) {
       if (error instanceof Error) {
         return setError(form, "", error.message)
       }
+      throw error
     }
+
+    await PrismaClient.election.update({
+      where: { id: election.id },
+      data: {
+        members: {
+          set: [],
+          connectOrCreate: members.map((member) => ({
+            where: { userID: member.userID },
+            create: {
+              userID: member.userID,
+              name: member.name, // TODO: Validate name?
+            },
+          })),
+        },
+      },
+    })
   }),
-  updateMembers: requireElectionAdmin({ id: true }, async ({ request, election }) => {
-    const form = await superValidate(request, zod(updateMembersSchema))
+  addMember: requireElectionAdmin({ id: true }, async ({ request, election }) => {
+    const form = await superValidate(request, zod(editMemberSchema))
 
     if (!form.valid) {
       return fail(400, { form })
@@ -69,18 +90,37 @@ export const actions = {
       where: { id: election.id },
       data: {
         members: {
-          set: [],
-          connectOrCreate: form.data.members.map((member) => ({
-            where: { userID: member.userID },
+          connectOrCreate: {
+            where: { userID: form.data.userID },
             create: {
-              userID: member.userID,
-              name: member.name, // TODO: Validate name
+              userID: form.data.userID,
+              name: "",
             },
-          })),
+          },
         },
       },
     })
 
-    return message(form, "Members updated")
+    return message(form, "Member added")
+  }),
+  removeMember: requireElectionAdmin({ id: true }, async ({ request, election }) => {
+    const form = await superValidate(request, zod(editMemberSchema))
+
+    if (!form.valid) {
+      return fail(400, { form })
+    }
+
+    await PrismaClient.election.update({
+      where: { id: election.id },
+      data: {
+        members: {
+          disconnect: {
+            userID: form.data.userID,
+          },
+        },
+      },
+    })
+
+    return message(form, "Member removed")
   }),
 }

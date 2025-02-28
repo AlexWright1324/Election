@@ -9,7 +9,7 @@
   }: {
     children: Snippet
     disabled: boolean
-    disabledText: string
+    disabledText?: string
   } = $props()
 </script>
 

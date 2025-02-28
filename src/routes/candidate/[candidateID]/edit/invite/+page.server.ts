@@ -1,3 +1,4 @@
+import { UserCanJoinCandidate } from "$lib/client/checks.js"
 import { requireCandidateAdmin } from "$lib/server/auth"
 import { Prisma, PrismaClient } from "$lib/server/db"
 
@@ -27,54 +28,75 @@ export const load = requireCandidateAdmin(
 )
 
 export const actions = {
-  invite: requireCandidateAdmin({ id: true }, async ({ request, candidate }) => {
-    const form = await superValidate(request, zod(inviteFormSchema))
-
-    if (!form.valid) {
-      return fail(400, { form })
-    }
-
-    const invitedID = form.data.userID.replace(/^u/, "")
-
-    await PrismaClient.candidate
-      .update({
-        where: {
-          id: candidate.id,
-          users: {
-            none: {
-              userID: form.data.userID,
+  invite: requireCandidateAdmin(
+    {
+      id: true,
+      users: { select: { userID: true } },
+      role: {
+        select: {
+          election: {
+            select: {
+              nominationsStart: true,
+              nominationsEnd: true,
+              candidateMaxUsers: true,
             },
           },
         },
-        data: {
-          userInvites: {
-            connectOrCreate: {
-              where: {
-                userID: invitedID,
-              },
-              create: {
-                name: "",
-                userID: invitedID,
+      },
+    },
+    async ({ request, candidate }) => {
+      const form = await superValidate(request, zod(inviteFormSchema))
+
+      if (!form.valid) {
+        return fail(400, { form })
+      }
+
+      const invitedID = form.data.userID.replace(/^u/, "")
+
+      if (!UserCanJoinCandidate(candidate, invitedID, new Date())) {
+        return setError(form, "", "You can't invite this user")
+      }
+
+      await PrismaClient.candidate
+        .update({
+          where: {
+            id: candidate.id,
+            users: {
+              none: {
+                userID: form.data.userID,
               },
             },
           },
-        },
-      })
-      .catch((error) => {
-        if (error instanceof Prisma.PrismaClientKnownRequestError) {
-          switch (error.code) {
-            case "P2025":
-              return setError(form, "userID", "User doesn't exist")
-            case "P2016":
-              return setError(form, "userID", "User is already a candidate")
-            default:
-              return setError(form, "", `${error.code}: ${error.message}`)
+          data: {
+            userInvites: {
+              connectOrCreate: {
+                where: {
+                  userID: invitedID,
+                },
+                create: {
+                  name: "",
+                  userID: invitedID,
+                },
+              },
+            },
+          },
+        })
+        .catch((error) => {
+          if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            switch (error.code) {
+              case "P2025":
+                return setError(form, "userID", "User doesn't exist")
+              case "P2016":
+                return setError(form, "userID", "User is already a candidate")
+              default:
+                return setError(form, "", `${error.code}: ${error.message}`)
+            }
           }
-        }
-      })
+        })
 
-    return message(form, "User invited")
-  }),
+      return message(form, "User invited")
+    },
+  ),
   uninvite: requireCandidateAdmin({ id: true }, async ({ request, candidate }) => {
     const form = await superValidate(request, zod(inviteFormSchema))
 

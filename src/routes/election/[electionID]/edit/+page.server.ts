@@ -3,7 +3,7 @@ import { Prisma, PrismaClient } from "$lib/server/db"
 import { deleteElection, enforceRON } from "$lib/server/election"
 import { storeElectionCoverImage } from "$lib/server/store"
 
-import { updateSchema } from "./schema"
+import { determineSchema, updateSchemaDefault } from "./schema"
 
 import { redirect } from "@sveltejs/kit"
 import { message, superValidate, fail, setError } from "sveltekit-superforms"
@@ -18,7 +18,6 @@ export const load = requireElectionAdmin(
     end: true,
     nominationsStart: true,
     nominationsEnd: true,
-    published: true,
     membersOnly: true,
     imageVersion: true,
     ronEnabled: true,
@@ -33,7 +32,7 @@ export const load = requireElectionAdmin(
   async ({ election }) => {
     return {
       election,
-      updateForm: await superValidate(election, zod(updateSchema)),
+      updateForm: await superValidate(election, zod(updateSchemaDefault)),
     }
   },
 )
@@ -41,10 +40,10 @@ export const load = requireElectionAdmin(
 export const actions = {
   update: requireElectionAdmin(
     { id: true, imageVersion: true, start: true, end: true },
-    async ({ request, election }) => {
-      const form = await superValidate(request, zod(updateSchema), {
-        strict: true,
-      })
+    async ({ request, election, cookies, locals }) => {
+      const bypass = locals.session?.user.admin ? cookies.get("bypass") === "true" : false
+      const { schema } = determineSchema(new Date(), election, bypass)
+      const form = await superValidate(request, zod(schema))
 
       if (!form.valid) {
         return fail(400, { form })
@@ -61,47 +60,17 @@ export const actions = {
           })
       }
 
-      // Only allow changes to certain field when election is ongoing
-      const initialData = {
-        name: form.data.name,
-        description: form.data.description,
-        candidateDefaultDescription: form.data.candidateDefaultDescription,
-        candidateMaxDescription: form.data.candidateMaxDescription,
-        motionMaxDescription: form.data.motionMaxDescription,
-        motionDefaultDescription: form.data.motionDefaultDescription,
-        motionMaxSeconders: form.data.motionMaxSeconders,
-      }
-
-      // TODO: Decide if election is locked after voting starts (disregard ending)
-      let data: Prisma.ElectionUpdateInput = initialData
-      const addData = () => {
-        data = {
-          ...initialData,
-          start: form.data.start,
-          end: form.data.end,
-          nominationsStart: form.data.nominationsStart,
-          nominationsEnd: form.data.nominationsEnd,
-          membersOnly: form.data.membersOnly,
-          ronEnabled: form.data.ronEnabled,
-          candidateMaxUsers: form.data.candidateMaxUsers,
-          motionEnabled: form.data.motionEnabled,
-          published: form.data.published,
-        } satisfies typeof form.data // Check all fields are present
-      }
-      if (election.start && election.end) {
-        if (election.start < new Date() && election.end > new Date()) {
-          addData()
-        }
-      } else {
-        addData()
-      }
+      delete form.data.image
 
       await PrismaClient.$transaction(async (tx) => {
         await tx.election.update({
           where: {
             id: election.id,
           },
-          data,
+          data: {
+            ...form.data,
+            imageVersion: imageProcessed === true ? election.imageVersion + 1 : Prisma.skip,
+          },
         })
         await enforceRON(tx, election.id)
       })
@@ -109,11 +78,12 @@ export const actions = {
       if (imageProcessed === false) {
         return setError(form, "image", "Failed to store image")
       }
-
+      // TODO: Fix returning without data
       return message(form, "Updated")
     },
   ),
   delete: requireElectionAdmin({ id: true }, async ({ election }) => {
+    // TODO: WARNINGS HERE
     deleteElection(election.id)
 
     return redirect(303, "/election")

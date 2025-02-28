@@ -1,3 +1,4 @@
+import { UserCanSecondMotion } from "$lib/client/checks.js"
 import { requireAuth, requireMotion } from "$lib/server/auth"
 import { PrismaClient } from "$lib/server/db"
 
@@ -43,14 +44,16 @@ export const actions = {
             userID: true,
           },
         },
+        election: {
+          select: {
+            start: true,
+            motionMaxSeconders: true,
+          },
+        },
       },
       async ({ motion, userID }) => {
-        if (motion.proposer.userID === userID) {
-          return fail(400, { message: "You cannot second your own motion" })
-        }
-
-        if (motion.seconders.some((seconder) => seconder.userID === userID)) {
-          return fail(400, { message: "You have already seconded this motion" })
+        if (!UserCanSecondMotion(motion, userID, new Date())) {
+          return fail(403, { message: "You can't second this motion" })
         }
 
         await PrismaClient.motion.update({

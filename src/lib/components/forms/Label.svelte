@@ -3,7 +3,7 @@
     name,
     errors,
   }: {
-    name: string
+    name?: string
     errors: string[] | undefined
   } = $props()
 </script>

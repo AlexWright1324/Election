@@ -19,15 +19,20 @@ const PAGES = {
   "/candidate/[candidateID]/edit/invite": (params: { candidateID: string | number }) => {
     return `/candidate/${params["candidateID"]}/edit/invite`
   },
-  "/election": `/election`,
   "/election/[electionID]": (params: { electionID: string | number }) => {
     return `/election/${params["electionID"]}`
   },
   "/election/[electionID]/edit": (params: { electionID: string | number }) => {
     return `/election/${params["electionID"]}/edit`
   },
+  "/election/[electionID]/edit/candidates": (params: { electionID: string | number }) => {
+    return `/election/${params["electionID"]}/edit/candidates`
+  },
   "/election/[electionID]/edit/members": (params: { electionID: string | number }) => {
     return `/election/${params["electionID"]}/edit/members`
+  },
+  "/election/[electionID]/edit/motions": (params: { electionID: string | number }) => {
+    return `/election/${params["electionID"]}/edit/motions`
   },
   "/election/[electionID]/edit/roles": (params: { electionID: string | number }) => {
     return `/election/${params["electionID"]}/edit/roles`
@@ -68,6 +73,7 @@ const SERVERS = {
  * ACTIONS
  */
 const ACTIONS = {
+  "create /": `/?/create`,
   "acceptInvite /candidate/[candidateID]": (params: { candidateID: string | number }) => {
     return `/candidate/${params["candidateID"]}?/acceptInvite`
   },
@@ -83,7 +89,6 @@ const ACTIONS = {
   "uninvite /candidate/[candidateID]/edit/invite": (params: { candidateID: string | number }) => {
     return `/candidate/${params["candidateID"]}/edit/invite?/uninvite`
   },
-  "create /election": `/election?/create`,
   "candidateSignup /election/[electionID]": (params: { electionID: string | number }) => {
     return `/election/${params["electionID"]}?/candidateSignup`
   },
@@ -96,14 +101,23 @@ const ACTIONS = {
   "delete /election/[electionID]/edit": (params: { electionID: string | number }) => {
     return `/election/${params["electionID"]}/edit?/delete`
   },
+  "update /election/[electionID]/edit/candidates": (params: { electionID: string | number }) => {
+    return `/election/${params["electionID"]}/edit/candidates?/update`
+  },
   "updateApiKey /election/[electionID]/edit/members": (params: { electionID: string | number }) => {
     return `/election/${params["electionID"]}/edit/members?/updateApiKey`
   },
   "populateMembers /election/[electionID]/edit/members": (params: { electionID: string | number }) => {
     return `/election/${params["electionID"]}/edit/members?/populateMembers`
   },
-  "updateMembers /election/[electionID]/edit/members": (params: { electionID: string | number }) => {
-    return `/election/${params["electionID"]}/edit/members?/updateMembers`
+  "addMember /election/[electionID]/edit/members": (params: { electionID: string | number }) => {
+    return `/election/${params["electionID"]}/edit/members?/addMember`
+  },
+  "removeMember /election/[electionID]/edit/members": (params: { electionID: string | number }) => {
+    return `/election/${params["electionID"]}/edit/members?/removeMember`
+  },
+  "update /election/[electionID]/edit/motions": (params: { electionID: string | number }) => {
+    return `/election/${params["electionID"]}/edit/motions?/update`
   },
   "editRoles /election/[electionID]/edit/roles": (params: { electionID: string | number }) => {
     return `/election/${params["electionID"]}/edit/roles?/editRoles`
@@ -116,6 +130,9 @@ const ACTIONS = {
   },
   "edit /motion/[motionID]/edit": (params: { motionID: string | number }) => {
     return `/motion/${params["motionID"]}/edit?/edit`
+  },
+  "delete /motion/[motionID]/edit": (params: { motionID: string | number }) => {
+    return `/motion/${params["motionID"]}/edit?/delete`
   },
   "accept /motion/[motionID]/edit/requests": (params: { motionID: string | number }) => {
     return `/motion/${params["motionID"]}/edit/requests?/accept`
@@ -239,10 +256,11 @@ export type KIT_ROUTES = {
     "/candidate/[candidateID]": "candidateID"
     "/candidate/[candidateID]/edit": "candidateID"
     "/candidate/[candidateID]/edit/invite": "candidateID"
-    "/election": never
     "/election/[electionID]": "electionID"
     "/election/[electionID]/edit": "electionID"
+    "/election/[electionID]/edit/candidates": "electionID"
     "/election/[electionID]/edit/members": "electionID"
+    "/election/[electionID]/edit/motions": "electionID"
     "/election/[electionID]/edit/roles": "electionID"
     "/election/[electionID]/results": "electionID"
     "/election/[electionID]/vote": "electionID"
@@ -253,23 +271,27 @@ export type KIT_ROUTES = {
   }
   SERVERS: { "GET /assets/[...path]": "path"; "GET /election/[electionID]/results/proof": "electionID" }
   ACTIONS: {
+    "create /": never
     "acceptInvite /candidate/[candidateID]": "candidateID"
     "update /candidate/[candidateID]/edit": "candidateID"
     "leave /candidate/[candidateID]/edit": "candidateID"
     "invite /candidate/[candidateID]/edit/invite": "candidateID"
     "uninvite /candidate/[candidateID]/edit/invite": "candidateID"
-    "create /election": never
     "candidateSignup /election/[electionID]": "electionID"
     "createMotion /election/[electionID]": "electionID"
     "update /election/[electionID]/edit": "electionID"
     "delete /election/[electionID]/edit": "electionID"
+    "update /election/[electionID]/edit/candidates": "electionID"
     "updateApiKey /election/[electionID]/edit/members": "electionID"
     "populateMembers /election/[electionID]/edit/members": "electionID"
-    "updateMembers /election/[electionID]/edit/members": "electionID"
+    "addMember /election/[electionID]/edit/members": "electionID"
+    "removeMember /election/[electionID]/edit/members": "electionID"
+    "update /election/[electionID]/edit/motions": "electionID"
     "editRoles /election/[electionID]/edit/roles": "electionID"
     "vote /election/[electionID]/vote": "electionID"
     "second /motion/[motionID]": "motionID"
     "edit /motion/[motionID]/edit": "motionID"
+    "delete /motion/[motionID]/edit": "motionID"
     "accept /motion/[motionID]/edit/requests": "motionID"
     "reject /motion/[motionID]/edit/requests": "motionID"
     "default /signin": never
