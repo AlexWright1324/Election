@@ -1,5 +1,5 @@
+import { UserCanCreateElection } from "$lib/client/checks"
 import { emptySchema } from "$lib/client/schema"
-import { requireAuth } from "$lib/server/auth"
 import { ElectionIsVisible, isElectionAdmin } from "$lib/server/checks"
 import { Prisma, PrismaClient } from "$lib/server/db"
 
@@ -41,16 +41,21 @@ export const load = async ({ locals }) => {
 }
 
 export const actions = {
-  create: requireAuth(async ({ request, userID }) => {
+  create: async ({ request, locals }) => {
     const form = await superValidate(request, zod(emptySchema))
     if (!form.valid) return fail(400, { form })
+
+    const canCreate = UserCanCreateElection(locals.session?.user)
+    if (canCreate.allow === undefined) {
+      return setError(form, "", canCreate.error)
+    }
 
     try {
       const election = await PrismaClient.election.create({
         data: {
           admins: {
             connect: {
-              userID,
+              userID: locals.session?.user.userID,
             },
           },
         },
@@ -63,5 +68,5 @@ export const actions = {
       }
       throw error
     }
-  }),
+  },
 }

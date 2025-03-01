@@ -9,6 +9,12 @@ export const load = requireMotion(
     id: true,
     name: true,
     description: true,
+    election: {
+      select: {
+        start: true,
+        motionMaxSeconders: true,
+      },
+    },
     proposer: {
       select: {
         name: true,
@@ -22,51 +28,62 @@ export const load = requireMotion(
       },
     },
   },
-  async ({ motion }) => {
+  async ({ motion, locals }) => {
+    const motionData = {
+      ...motion,
+      requested: await PrismaClient.motion.exists({
+        id: motion.id,
+        seconderRequests: {
+          some: {
+            userID: locals.session?.user.userID ?? "",
+          },
+        },
+      }),
+    }
+
     return {
-      motion,
+      motion: motionData,
     }
   },
 )
 
 export const actions = {
-  second: requireAuth(
-    requireMotion(
-      {
-        id: true,
-        proposer: {
-          select: {
-            userID: true,
-          },
-        },
-        seconders: {
-          select: {
-            userID: true,
-          },
-        },
-        election: {
-          select: {
-            start: true,
-            motionMaxSeconders: true,
-          },
+  second: requireMotion(
+    {
+      id: true,
+      proposer: {
+        select: {
+          userID: true,
         },
       },
-      async ({ motion, userID }) => {
-        if (!UserCanSecondMotion(motion, userID, new Date())) {
-          return fail(403, { message: "You can't second this motion" })
-        }
+      seconders: {
+        select: {
+          userID: true,
+        },
+      },
+      election: {
+        select: {
+          start: true,
+          motionMaxSeconders: true,
+        },
+      },
+    },
+    async ({ motion, locals }) => {
+      const canSecond = UserCanSecondMotion(motion, locals.session?.user, new Date())
+      if (!canSecond.allow) {
+        return fail(403, { message: canSecond.error })
+      }
 
-        await PrismaClient.motion.update({
-          where: { id: motion.id },
-          data: {
-            seconderRequests: {
-              connect: {
-                userID,
-              },
+      await PrismaClient.motion.update({
+        where: { id: motion.id },
+        data: {
+          seconderRequests: {
+            connect: {
+              userID: locals.session?.user.userID,
             },
           },
-        })
-      },
-    ),
+        },
+      })
+    },
   ),
 }

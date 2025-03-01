@@ -40,6 +40,9 @@ const PAGES = {
   "/election/[electionID]/results": (params: { electionID: string | number }) => {
     return `/election/${params["electionID"]}/results`
   },
+  "/election/[electionID]/verify": (params: { electionID: string | number }) => {
+    return `/election/${params["electionID"]}/verify`
+  },
   "/election/[electionID]/vote": (params: { electionID: string | number }) => {
     return `/election/${params["electionID"]}/vote`
   },
@@ -121,6 +124,9 @@ const ACTIONS = {
   },
   "editRoles /election/[electionID]/edit/roles": (params: { electionID: string | number }) => {
     return `/election/${params["electionID"]}/edit/roles?/editRoles`
+  },
+  "verify /election/[electionID]/verify": (params: { electionID: string | number }) => {
+    return `/election/${params["electionID"]}/verify?/verify`
   },
   "vote /election/[electionID]/vote": (params: { electionID: string | number }) => {
     return `/election/${params["electionID"]}/vote?/vote`
@@ -263,6 +269,7 @@ export type KIT_ROUTES = {
     "/election/[electionID]/edit/motions": "electionID"
     "/election/[electionID]/edit/roles": "electionID"
     "/election/[electionID]/results": "electionID"
+    "/election/[electionID]/verify": "electionID"
     "/election/[electionID]/vote": "electionID"
     "/election/[electionID]/vote/confirm": "electionID"
     "/motion/[motionID]": "motionID"
@@ -288,6 +295,7 @@ export type KIT_ROUTES = {
     "removeMember /election/[electionID]/edit/members": "electionID"
     "update /election/[electionID]/edit/motions": "electionID"
     "editRoles /election/[electionID]/edit/roles": "electionID"
+    "verify /election/[electionID]/verify": "electionID"
     "vote /election/[electionID]/vote": "electionID"
     "second /motion/[motionID]": "motionID"
     "edit /motion/[motionID]/edit": "motionID"

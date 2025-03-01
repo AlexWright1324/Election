@@ -12,12 +12,12 @@ model Voter {
 model Ballot {
   id        Int      @id @default(autoincrement())
   election  Election @relation(fields: [electionID], references: [id], onDelete: Cascade)
-  signature String   @default(cuid(2))
+  signature String   @unique @default(cuid(2))
 
   electionID String
 
   candidateVotes CandidateVote[]
-  motionVotes MotionVote[]
+  motionVotes    MotionVote[]
 }
 
 model CandidateVote {

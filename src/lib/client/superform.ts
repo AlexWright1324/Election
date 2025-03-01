@@ -19,8 +19,6 @@ export const superForm = <
     validationMethod: "oninput",
     ...params[1],
     onUpdated: (event) => {
-      console.log("A")
-      console.log(event)
       event.form.errors._errors?.forEach((error) => {
         toast.create({
           title: "Error",
@@ -31,8 +29,6 @@ export const superForm = <
       return params[1]?.onUpdated?.(event)
     },
     onError: (event) => {
-      console.log("B")
-      console.log(event)
       toast.create({
         title: "Error",
         type: "error",
@@ -44,8 +40,6 @@ export const superForm = <
       return params[1]?.onError?.(event)
     },
     /*     onResult: (event) => {
-      console.log("C")
-      console.log(event)
       if (event.result.type === "failure") {
         // setError
         toast.create({

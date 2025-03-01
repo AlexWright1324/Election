@@ -42,8 +42,9 @@ export const actions = {
         return fail(400, { form })
       }
 
-      if (!UserCanSecondMotion(motion, form.data.userID, new Date())) {
-        return setError(form, "", "User can't second this motion")
+      const canSecond = UserCanSecondMotion(motion, { userID: form.data.userID }, new Date())
+      if (canSecond.allow === undefined) {
+        return setError(form, "", canSecond.error)
       }
 
       await PrismaClient.motion.update({

@@ -1,7 +1,6 @@
-import { UserCanCreateMotion } from "$lib/client/checks.js"
+import { UserCanCreateCandidate, UserCanCreateMotion } from "$lib/client/checks"
 import { emptySchema } from "$lib/client/schema"
 import { requireAuth, requireElection } from "$lib/server/auth"
-import { canSignup } from "$lib/server/checks"
 import { Prisma, PrismaClient } from "$lib/server/db"
 
 import { redirect } from "@sveltejs/kit"
@@ -25,11 +24,13 @@ export const load = requireElection(
     nominationsEnd: true,
     membersOnly: true,
     motionEnabled: true,
+    resultsPosted: true,
     roles: {
       select: {
         id: true,
         name: true,
         seatsToFill: true,
+        result: true,
         candidates: {
           where: {
             isRON: false,
@@ -51,6 +52,7 @@ export const load = requireElection(
       select: {
         id: true,
         name: true,
+        result: true,
         proposer: {
           select: {
             name: true,
@@ -69,9 +71,33 @@ export const load = requireElection(
       },
     },
   },
-  async ({ election }) => {
+  async ({ election, locals }) => {
+    const electionData = {
+      ...election,
+      hasVoted: locals.session
+        ? await PrismaClient.voter.exists({
+            election: {
+              id: election.id,
+            },
+            user: {
+              userID: locals.session?.user.userID,
+            },
+          })
+        : false,
+      isMember: locals.session
+        ? await PrismaClient.election.exists({
+            id: election.id,
+            members: {
+              some: {
+                userID: locals.session?.user.userID,
+              },
+            },
+          })
+        : false,
+    }
+
     return {
-      election,
+      election: electionData,
       candidateSignupForm: await superValidate(zod(candidateSignupSchema)),
       createMotionForm: await superValidate(zod(emptySchema)),
     }
@@ -84,34 +110,38 @@ export const actions = {
       {
         id: true,
         candidateDefaultDescription: true,
+        nominationsStart: true,
+        nominationsEnd: true,
       },
-      async ({ request, election, userID }) => {
+      async ({ request, election, userID, locals }) => {
         const form = await superValidate(request, zod(candidateSignupSchema))
         if (!form.valid) return fail(400, { form })
 
         try {
           const candidate = await PrismaClient.$transaction(async (tx) => {
-            const can = await tx.election.exists({
-              id: election.id,
-              AND: [canSignup(userID)],
-            })
-
-            if (!can) {
-              throw Error("You cannot sign up for this election")
-            }
-
-            const exists = await tx.candidate.exists({
-              role: {
+            const role = await tx.role.findUnique({
+              where: {
                 id: form.data.roleID,
               },
-              users: {
-                some: {
-                  userID,
+              select: {
+                candidates: {
+                  select: {
+                    users: {
+                      select: {
+                        userID: true,
+                      },
+                    },
+                  },
                 },
               },
             })
-            if (exists) {
-              throw Error("You are already a candidate for this role")
+            if (!role) {
+              throw new Error("Role not found")
+            }
+            const canSignup = UserCanCreateCandidate(election, role, locals.session?.user, new Date())
+
+            if (canSignup.allow === undefined) {
+              throw new Error(canSignup.error)
             }
 
             const candidate = await tx.candidate.create({
@@ -135,6 +165,7 @@ export const actions = {
 
             return candidate
           })
+
           return redirect(303, `/candidate/${candidate.id}`)
         } catch (error) {
           if (error instanceof Prisma.PrismaClientKnownRequestError || error instanceof Error) {
@@ -158,8 +189,9 @@ export const actions = {
         const form = await superValidate(request, zod(emptySchema))
         if (!form.valid) return fail(400, { form })
 
-        if (!UserCanCreateMotion(election, userID, new Date())) {
-          return setError(form, "", "You cannot create a motion for this election")
+        const canCreate = UserCanCreateMotion(election, userID, new Date())
+        if (canCreate.allow === undefined) {
+          return setError(form, "", canCreate.error)
         }
 
         try {

@@ -1,6 +1,6 @@
+import { ElectionIsVisible, UserCanViewElection } from "$lib/client/checks"
 import {
   isElectionAdmin,
-  ElectionIsVisible,
   CandidateIsVisible,
   isCandidateAdmin,
   MotionIsVisible,
@@ -9,6 +9,8 @@ import {
   canSignup,
 } from "$lib/server/checks"
 import { PrismaClient, type Prisma } from "$lib/server/db"
+
+import { generateResults } from "./election"
 
 import { SvelteKitAuth, type Session } from "@auth/sveltekit"
 import Keycloak from "@auth/sveltekit/providers/keycloak"
@@ -91,44 +93,79 @@ export const requireAuth = <T extends LoadOrAction, R>(handler: (event: T & { us
   }
 }
 
-type ElectionReturn<S extends Prisma.ElectionSelect> = Prisma.ElectionGetPayload<{ select: S }> & {
-  isAdmin: boolean
-  isMember: boolean
-  canSignup: boolean
-  voted: boolean
-}
-
 export const requireElection = <T extends LoadOrAction, S extends Prisma.ElectionSelect, R>(
   select: S,
-  handler: (event: T & { election: ElectionReturn<S> }) => Promise<R> | R,
+  handler: (event: T & { election: Prisma.ElectionGetPayload<{ select: S }> }) => Promise<R> | R,
 ) => {
   return async (event: T) => {
     const electionID = event.params.electionID
     if (!electionID) return handleFailure(event, 400, "Missing election ID")
 
-    const election = (await PrismaClient.election.findUnique({
-      where: { id: electionID, AND: [ElectionIsVisible(event.locals.session?.user.userID)] },
+    const electionData = await PrismaClient.election.findUnique({
+      where: { id: electionID },
+      select: {
+        start: true,
+        end: true,
+        nominationsEnd: true,
+        nominationsStart: true,
+        admins: { select: { userID: true } },
+        resultsPosted: true,
+      },
+    })
+
+    if (!electionData) return handleFailure(event, 404, "Election not found")
+
+    const canView = UserCanViewElection(electionData, event.locals.session?.user)
+    if (!canView.allow) {
+      return handleFailure(event, 404, "Election not found")
+    }
+
+    // Generate results if election is over and not posted
+    if (!electionData.resultsPosted && electionData.end && electionData.end < new Date()) {
+      const results = await generateResults(electionID)
+
+      const roles = {
+        updateMany: results.results.roles.map((role) => ({
+          where: { id: role.id },
+          data: {
+            result: {
+              droopQuota: role.droopQuota,
+              winners: role.winners,
+              rounds: role.rounds,
+            } satisfies PrismaJson.RoleResult,
+          },
+        })),
+      }
+
+      const motions = {
+        updateMany: results.results.motions.map((motion) => ({
+          where: { id: motion.id },
+          data: {
+            results: {
+              for: motion.results.for,
+              against: motion.results.against,
+              abstain: motion.results.abstain,
+            } satisfies PrismaJson.MotionResult,
+          },
+        })),
+      }
+
+      await PrismaClient.election.update({
+        where: { id: electionID },
+        data: {
+          roles,
+          motions,
+          resultsPosted: true,
+        },
+      })
+    }
+
+    const election = await PrismaClient.election.findUnique({
+      where: { id: electionID },
       select,
-    })) as ElectionReturn<S>
+    })
 
     if (!election) return handleFailure(event, 404, "Election not found?")
-
-    election.isAdmin = await PrismaClient.election.exists({
-      id: electionID,
-      AND: [isElectionAdmin(event.locals.session?.user.userID)],
-    })
-    election.isMember = await PrismaClient.election.exists({
-      id: electionID,
-      AND: [isElectionMember(event.locals.session?.user.userID)],
-    })
-    election.canSignup = await PrismaClient.election.exists({
-      id: electionID,
-      AND: [canSignup(event.locals.session?.user.userID)],
-    })
-    election.voted = await PrismaClient.voter.exists({
-      electionID,
-      userID: event.locals.session?.user.userID ?? "",
-    })
 
     return handler({ ...event, election })
   }

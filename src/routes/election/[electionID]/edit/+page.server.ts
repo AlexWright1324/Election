@@ -1,3 +1,4 @@
+import { route } from "$lib/ROUTES"
 import { requireElectionAdmin } from "$lib/server/auth"
 import { Prisma, PrismaClient } from "$lib/server/db"
 import { deleteElection, enforceRON } from "$lib/server/election"
@@ -86,6 +87,6 @@ export const actions = {
     // TODO: WARNINGS HERE
     deleteElection(election.id)
 
-    return redirect(303, "/election")
+    return redirect(303, route("/"))
   }),
 }

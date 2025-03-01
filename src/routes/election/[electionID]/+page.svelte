@@ -1,11 +1,13 @@
 <script lang="ts">
   import { date } from "$lib/client/time.svelte"
-  import Card from "$lib/components/Card.svelte"
   import DisableAnchor from "$lib/components/DisableAnchor.svelte"
+  import DisableButton from "$lib/components/DisableButton.svelte"
+
+  import Results from "./results/Results.svelte"
 
   import { route } from "$lib/ROUTES"
   import { carta } from "$lib/client/carta"
-  import { UserCanCreateCandidate, UserCanCreateMotion } from "$lib/client/checks"
+  import { UserCanCreateCandidate, UserCanCreateMotion, UserCanVote } from "$lib/client/checks"
   import { seperateJoin } from "$lib/client/separate"
   import { getCandidateCoverImage, getElectionCoverImage } from "$lib/client/store"
   import { superForm } from "$lib/client/superform"
@@ -18,6 +20,8 @@
 
   const { enhance: candidateSignupEnhance } = superForm(getContext("toast"), data.candidateSignupForm)
   const { enhance: createMotionEnhance } = superForm(getContext("toast"), data.createMotionForm)
+
+  const canVote = UserCanVote(data.election, data.session?.user, date.now)
 </script>
 
 <h1 class="h1">{data.election.name}</h1>
@@ -33,35 +37,42 @@
     </div>
     <ElectionInfo election={data.election} />
     <DisableAnchor
-      aClass="w-full"
+      class="w-full"
       href={route("/election/[electionID]/vote", { electionID: data.election.id })}
-      disables={[
-        { disabled: !data.session, text: "Login to Vote" },
-        { disabled: data.election.membersOnly && !data.election.isMember, text: "Members Only" },
-        { disabled: !(data.election.start && data.election.end), text: "" },
-        { disabled: data.election.start! > new Date(Date.now()), text: "" },
-        { disabled: data.election.end! < new Date(Date.now()), text: "" },
-        { disabled: data.election.voted, text: "Already Voted" },
-      ]}
-    >
-      Vote
-    </DisableAnchor>
+      text="Vote"
+      disabled={!canVote.allow}
+      disabledText={canVote.error}
+    />
+    {#if data.election.hasVoted}
+      <a
+        class="btn preset-filled-primary-500 w-full"
+        href={route("/election/[electionID]/verify", { electionID: data.election.id })}
+      >
+        Verify Vote
+      </a>
+    {/if}
   </div>
   <Markdown {carta} value={data.election.description} />
 </article>
+
+{#if data.election.resultsPosted}
+  <hr class="hr mt-2" />
+
+  <h2 class="h2">Results</h2>
+  <Results motions={data.election.motions} roles={data.election.roles} />
+{/if}
 
 <hr class="hr mt-2" />
 
 <h2 class="h2">Roles</h2>
 {#each data.election.roles as role}
+  {@const canCreate = UserCanCreateCandidate(data.election, role, data.session?.user, date.now)}
   <div class="flex flex-wrap items-center justify-between gap-x-2">
     <h3 class="h3">{role.name}</h3>
-    {#if !role.candidates.some( (c) => c.users.some((u) => u), ) && UserCanCreateCandidate(data.election, data.session?.user, date.now)}
-      <form action="?/candidateSignup" method="post" use:candidateSignupEnhance>
-        <input type="hidden" name="roleID" value={role.id} />
-        <button class="btn preset-tonal-primary" type="submit">Become a Candidate</button>
-      </form>
-    {/if}
+    <form action="?/candidateSignup" method="post" use:candidateSignupEnhance>
+      <input type="hidden" name="roleID" value={role.id} />
+      <DisableButton text="Become a Candidate" disabledText={canCreate.error} disabled={!canCreate.allow} />
+    </form>
   </div>
   {#if role.seatsToFill > 1}
     <p class="text-primary-500">{role.seatsToFill} Seats to fill</p>
@@ -94,13 +105,12 @@
 <hr class="hr mt-2" />
 
 {#if data.election.motionEnabled}
+  {@const canCreate = UserCanCreateMotion(data.election, data.session?.user, date.now)}
   <div class="mb-2 flex flex-wrap items-center justify-between gap-x-2">
     <h2 class="h2">Motions</h2>
-    {#if UserCanCreateMotion(data.election, data.session?.user, date.now)}
-      <form action="?/createMotion" method="post" use:createMotionEnhance>
-        <button class="btn preset-tonal-primary" type="submit">Create a Motion</button>
-      </form>
-    {/if}
+    <form action="?/createMotion" method="post" use:createMotionEnhance>
+      <DisableButton text="Propose a Motion" disabledText={canCreate.error} disabled={!canCreate.allow} />
+    </form>
   </div>
   <div class="flex flex-col gap-2">
     {#each data.election.motions as motion}

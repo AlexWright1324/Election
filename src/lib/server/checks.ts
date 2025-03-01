@@ -26,7 +26,6 @@ export const ElectionIsVisible = (userID: string | undefined): Prisma.ElectionWh
           not: null,
         },
       },
-      isElectionAdmin(userID),
     ],
   }) as const
 

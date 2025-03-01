@@ -49,14 +49,18 @@
         isRON: c.isRON,
       }))}
     />
+  {:else}
+    <p>No roles to vote for</p>
   {/each}
 
   <h2 class="h2">Motions</h2>
   {#each data.election.motions as motion, index}
     <Radio {superform} field="motions[{index}].vote" name={motion.name} options={motionVote} />
+  {:else}
+    <p>No motions to vote for</p>
   {/each}
 
-  <button class="btn mt-2 w-full preset-filled-primary-500" disabled={!isTainted($tainted) || $allErrors.length !== 0}>
+  <button class="btn preset-filled-primary-500 mt-2 w-full" disabled={!isTainted($tainted) || $allErrors.length !== 0}>
     Submit Vote
   </button>
 </form>

@@ -1,8 +1,9 @@
 model Election {
-  id           String @id @default(nanoid(8))
-  name         String @default("New Election")
-  description  String @default("Sample Description")
-  imageVersion Int    @default(0)
+  id            String  @id @default(nanoid(8))
+  name          String  @default("New Election")
+  description   String  @default("Sample Description")
+  imageVersion  Int     @default(0)
+  resultsPosted Boolean @default(false)
 
   // Timing
   nominationsStart DateTime?
@@ -60,8 +61,6 @@ model Candidate {
   votes       CandidateVote[]
 
   roleID Int
-
-  @@unique([roleID, isRON])
 }
 
 model Motion {

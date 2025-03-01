@@ -1,6 +1,5 @@
 import { seperateJoin } from "$lib/client/separate"
 import { requireElectionAdmin } from "$lib/server/auth"
-import { PrismaClient } from "$lib/server/db"
 
 import { MotionVoteType } from "@prisma/client"
 import { stv } from "stv/src/stv"
@@ -155,7 +154,7 @@ export const load = requireElectionAdmin(
     const results = {
       roles: roleResults,
       motions: motionResults,
-    } satisfies PrismaJson.Results
+    }
 
     return {
       numVotes: election.ballots.length,

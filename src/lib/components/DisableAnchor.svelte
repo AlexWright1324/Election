@@ -1,35 +1,28 @@
 <script lang="ts">
-  import type { Snippet } from "svelte"
   import type { ClassValue, HTMLAnchorAttributes } from "svelte/elements"
 
-  const {
-    aClass,
-    children,
-    disables,
-    href,
-    ...restProps
-  }: {
-    aClass?: ClassValue
-    children?: Snippet
-    href: string
-    disables: {
-      disabled: boolean
-      text?: string
-    }[]
-  } & HTMLAnchorAttributes = $props()
+  interface Props extends HTMLAnchorAttributes {
+    class?: ClassValue
+    disabled: boolean
+    text: string
+    disabledText?: string
+  }
 
-  let disabled = $derived(disables.find((d) => d.disabled))
+  let { class: classes, text, disabled, disabledText, ...restProps }: Props = $props()
 </script>
 
 <a
-  class={["btn", aClass, disabled ? (disabled.text ? "disabled" : "hidden") : "preset-filled-primary-500"]}
-  href={disabled ? "javascript:void(0)" : href}
+  class={[
+    "btn",
+    disabled ? (disabledText ? "disabled preset-outlined" : "hidden") : "preset-filled-primary-500",
+    classes,
+  ]}
   {...restProps}
 >
   {#if disabled}
-    {disabled.text}
+    {disabledText}
   {:else}
-    {@render children?.()}
+    {text}
   {/if}
 </a>
 
@@ -37,8 +30,7 @@
   @reference "$lib/stylesheets/app.css";
 
   .disabled {
-    @apply preset-outlined-surface-400-600;
+    cursor: auto;
     pointer-events: none;
-    cursor: not-allowed;
   }
 </style>

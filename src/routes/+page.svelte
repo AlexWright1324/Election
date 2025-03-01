@@ -1,7 +1,10 @@
 <script lang="ts">
+  import DisableButton from "$lib/components/DisableButton.svelte"
+
   import ElectionInfo from "./election/ElectionInfo.svelte"
 
   import { route } from "$lib/ROUTES"
+  import { UserCanCreateElection } from "$lib/client/checks"
   import { getElectionCoverImage } from "$lib/client/store"
   import { superForm } from "$lib/client/superform"
 
@@ -10,6 +13,8 @@
   let { data } = $props()
 
   const { enhance: createEnhance } = superForm(getContext("toast"), data.createForm)
+
+  let canCreateElection = $derived(UserCanCreateElection(data.session?.user))
 </script>
 
 {#snippet ElectionCard(election: (typeof data.elections)[0])}
@@ -46,9 +51,11 @@
 <div class="flex flex-wrap items-center justify-between gap-2">
   <h1 class="h1">Elections</h1>
   <form method="post" action="?/create" use:createEnhance>
-    <button type="submit" class="btn preset-tonal" disabled={data.session?.user === undefined}>
-      Create New Election
-    </button>
+    <DisableButton
+      text="Create an Election"
+      disabledText={canCreateElection.error}
+      disabled={!canCreateElection.allow}
+    />
   </form>
 </div>
 {@render Elections(data.elections)}

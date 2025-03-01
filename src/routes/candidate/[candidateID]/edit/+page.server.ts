@@ -1,4 +1,4 @@
-import { UserCanEditCandidate } from "$lib/client/checks.js"
+import { UserCanEditCandidate } from "$lib/client/checks"
 import { zImage } from "$lib/client/schema"
 import { requireCandidateAdmin } from "$lib/server/auth"
 import { PrismaClient } from "$lib/server/db"
@@ -50,8 +50,9 @@ export const actions = {
         return fail(400, { form })
       }
 
-      if (!UserCanEditCandidate(candidate, locals.session?.user, new Date())) {
-        return setError(form, "", "You can't edit this candidate")
+      const canEdit = UserCanEditCandidate(candidate, locals.session?.user, new Date())
+      if (canEdit.allow === undefined) {
+        return setError(form, "", canEdit.error)
       }
 
       if (form.data.description.length > candidate.role.election.candidateMaxDescription) {
@@ -88,7 +89,7 @@ export const actions = {
         return fail(400, { message: "You can't leave this candidate" })
       }
 
-      await PrismaClient.candidate.update({
+      const candidateData = await PrismaClient.candidate.update({
         where: { id: candidate.id },
         data: {
           users: {
@@ -97,7 +98,20 @@ export const actions = {
             },
           },
         },
+        select: {
+          _count: {
+            select: {
+              users: true,
+            },
+          },
+        },
       })
+
+      if (candidateData._count.users === 0) {
+        await PrismaClient.candidate.delete({
+          where: { id: candidate.id },
+        })
+      }
 
       return redirect(303, `/election/${candidate.role.election.id}`)
     },

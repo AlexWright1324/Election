@@ -1,4 +1,6 @@
 <script lang="ts">
+  import BackToElection from "$lib/components/BackToElection.svelte"
+
   import { page } from "$app/state"
   import { onMount } from "svelte"
 
@@ -13,6 +15,8 @@
     window.localStorage.setItem(key, signature)
   })
 </script>
+
+<BackToElection electionID={data.election.id} />
 
 <h1 class="h1">Vote Sucessful</h1>
 <p>Your vote has been successfully cast.</p>
