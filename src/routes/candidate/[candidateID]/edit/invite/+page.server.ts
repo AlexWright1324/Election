@@ -1,4 +1,4 @@
-import { UserCanJoinCandidate } from "$lib/client/checks.js"
+import { UserCanJoinCandidate } from "$lib/client/checks"
 import { requireCandidateAdmin } from "$lib/server/auth"
 import { Prisma, PrismaClient } from "$lib/server/db"
 
@@ -53,8 +53,9 @@ export const actions = {
 
       const invitedID = form.data.userID.replace(/^u/, "")
 
-      if (!UserCanJoinCandidate(candidate, invitedID, new Date())) {
-        return setError(form, "", "You can't invite this user")
+      const canJoin = UserCanJoinCandidate(candidate, invitedID, new Date())
+      if (canJoin.error) {
+        return setError(form, "", canJoin.error)
       }
 
       await PrismaClient.candidate

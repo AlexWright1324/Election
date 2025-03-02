@@ -202,15 +202,39 @@ export const UserCanJoinCandidate = (
   user: unknown | undefined,
   date: Date,
 ) => {
-  return (
-    !candidate.users.some((u) => u.userID === user) &&
-    candidate.role.election.candidateMaxUsers > candidate.users.length &&
-    candidate.role.election.nominationsStart &&
-    candidate.role.election.nominationsEnd &&
-    candidate.role.election.nominationsStart <= date &&
-    candidate.role.election.nominationsEnd >= date &&
-    user
-  )
+  if (!user)
+    return {
+      error: "You must be logged in",
+    }
+
+  if (candidate.users.some((u) => u.userID === user))
+    return {
+      error: "You are already a candidate",
+    }
+
+  if (!candidate.role.election.nominationsStart || !candidate.role.election.nominationsEnd)
+    return {
+      error: "Nominations are not open",
+    }
+
+  if (candidate.role.election.nominationsStart > date)
+    return {
+      error: "Nominations have not started",
+    }
+
+  if (candidate.role.election.nominationsEnd < date)
+    return {
+      error: "Nominations have ended",
+    }
+
+  if (candidate.users.length >= candidate.role.election.candidateMaxUsers)
+    return {
+      error: "Maximum candidates reached",
+    }
+
+  return {
+    allow: true,
+  }
 }
 
 export const UserCanEditMotion = (

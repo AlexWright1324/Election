@@ -1,4 +1,4 @@
-import { UserCanJoinCandidate } from "$lib/client/checks.js"
+import { UserCanJoinCandidate } from "$lib/client/checks"
 import { emptySchema } from "$lib/client/schema"
 import { requireAuth, requireCandidate } from "$lib/server/auth"
 import { Prisma, PrismaClient } from "$lib/server/db"
@@ -86,8 +86,9 @@ export const actions = {
             return setError(form, "", "You are already a candidate for this role")
           }
 
-          if (!UserCanJoinCandidate(candidate, userID, new Date())) {
-            return setError(form, "", "You can't join this candidate")
+          const canJoin = UserCanJoinCandidate(candidate, userID, new Date())
+          if (canJoin.allow === undefined) {
+            return setError(form, "", canJoin.error)
           }
 
           try {
@@ -110,7 +111,6 @@ export const actions = {
             })
           } catch (error) {
             if (error instanceof Prisma.PrismaClientKnownRequestError) {
-              // TODO: This error message is not very helpful
               return setError(form, "", error.message)
             }
             throw error
