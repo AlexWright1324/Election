@@ -32,8 +32,9 @@ export const actions = {
         return setError(form, "description", `Description is longer than allowed by ${overBy} characters`)
       }
 
-      if (!UserCanEditMotion(motion, locals.session?.user, new Date())) {
-        return setError(form, "", "You can't edit this motion")
+      const canEdit = UserCanEditMotion(motion, locals.session?.user, new Date())
+      if (canEdit.error) {
+        return setError(form, "", canEdit.error)
       }
 
       await PrismaClient.motion.update({
@@ -52,8 +53,9 @@ export const actions = {
   delete: requireMotionAdmin(
     { id: true, proposer: { select: { userID: true } }, election: { select: { id: true, start: true } } },
     async ({ motion, locals }) => {
-      if (!UserCanEditMotion(motion, locals.session?.user, new Date())) {
-        return fail(403, { message: "You can't delete this motion" })
+      const canEdit = UserCanEditMotion(motion, locals.session?.user, new Date())
+      if (canEdit.error) {
+        return fail(403, { message: canEdit.error })
       }
       await PrismaClient.motion.delete({
         where: {

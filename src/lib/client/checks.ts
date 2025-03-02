@@ -233,10 +233,27 @@ export const UserCanJoinCandidate = (
 
 export const UserCanEditMotion = (
   motion: { proposer: { userID: string }; election: { start: Date | null } },
-  user: unknown | undefined,
+  user: { userID: string } | undefined,
   date: Date,
 ) => {
-  return motion.proposer.userID === user && motion.election.start && date < motion.election.start
+  if (!user)
+    return {
+      error: "You must be logged in",
+    }
+
+  if (motion.proposer.userID !== user.userID)
+    return {
+      error: "You are not the proposer",
+    }
+
+  if (!motion.election.start || motion.election.start < date)
+    return {
+      error: "Election has started",
+    }
+
+  return {
+    allow: true,
+  }
 }
 
 export const UserCanSecondMotion = (

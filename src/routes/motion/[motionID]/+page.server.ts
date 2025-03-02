@@ -1,5 +1,5 @@
-import { UserCanSecondMotion } from "$lib/client/checks.js"
-import { requireAuth, requireMotion } from "$lib/server/auth"
+import { UserCanRequestSecondMotion } from "$lib/client/checks.js"
+import { requireMotion } from "$lib/server/auth"
 import { PrismaClient } from "$lib/server/db"
 
 import { fail } from "@sveltejs/kit"
@@ -69,9 +69,20 @@ export const actions = {
       },
     },
     async ({ motion, locals }) => {
-      const canSecond = UserCanSecondMotion(motion, locals.session?.user, new Date())
-      if (!canSecond.allow) {
-        return fail(403, { message: canSecond.error })
+      const motionData = {
+        ...motion,
+        requested: await PrismaClient.motion.exists({
+          id: motion.id,
+          seconderRequests: {
+            some: {
+              userID: locals.session?.user.userID ?? "",
+            },
+          },
+        }),
+      }
+      const canRequestSecond = UserCanRequestSecondMotion(motionData, locals.session?.user, new Date())
+      if (!canRequestSecond.allow) {
+        return fail(403, { message: canRequestSecond.error })
       }
 
       await PrismaClient.motion.update({

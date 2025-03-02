@@ -80,7 +80,7 @@ export const load = requireElection(
               id: election.id,
             },
             user: {
-              userID: locals.session?.user.userID,
+              userID: locals.session?.user.userID ?? "",
             },
           })
         : false,
@@ -89,7 +89,7 @@ export const load = requireElection(
             id: election.id,
             members: {
               some: {
-                userID: locals.session?.user.userID,
+                userID: locals.session?.user.userID ?? "",
               },
             },
           })
