@@ -57,7 +57,7 @@
       {...$constraints}
       {...restProps}
     />
-    <Switch name={field} bind:checked={$value}>
+    <Switch name={field} checked={$value} onCheckedChange={(e: { checked: boolean }) => ($value = e.checked)}>
       {#snippet inactiveChild()}
         <X size="14" />
       {/snippet}

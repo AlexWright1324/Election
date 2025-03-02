@@ -27,7 +27,13 @@
         {#if user.admin}
           <div class="preset-outlined-warning-500 flex items-center gap-2 rounded-xl p-1 font-bold">
             <span class="text-sm">Bypass</span>
-            <Switch name="bypass" bind:checked={bypass.value} />
+            <Switch
+              name="bypass"
+              checked={bypass.value}
+              onCheckedChange={(e) => {
+                bypass.value = e.checked
+              }}
+            />
           </div>
         {/if}
         <span>

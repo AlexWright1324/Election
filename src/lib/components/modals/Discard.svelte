@@ -16,7 +16,8 @@
 </script>
 
 <Modal
-  bind:open
+  {open}
+  onOpenChange={(e: { open: boolean }) => (open = e.open)}
   backdropClasses="backdrop-blur-sm"
   contentBase="preset-filled-surface-100-900 preset-outlined-surface-200-800 w-full max-w-lg overflow-hidden rounded-xl shadow-xl"
 >
