@@ -1,4 +1,4 @@
-import { UserCanEditCandidate } from "$lib/client/checks"
+import { UserCanEditCandidate, UserCanLeaveCandidate } from "$lib/client/checks"
 import { zImage } from "$lib/client/schema"
 import { requireCandidateAdmin } from "$lib/server/auth"
 import { PrismaClient } from "$lib/server/db"
@@ -85,8 +85,9 @@ export const actions = {
       role: { select: { election: { select: { id: true, start: true } } } },
     },
     async ({ candidate, userID }) => {
-      if (!UserCanEditCandidate(candidate, userID, new Date())) {
-        return fail(400, { message: "You can't leave this candidate" })
+      const canLeave = UserCanLeaveCandidate(candidate, { userID }, new Date())
+      if (canLeave.error) {
+        return fail(400, { message: canLeave.error })
       }
 
       const candidateData = await PrismaClient.candidate.update({

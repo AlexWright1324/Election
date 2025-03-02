@@ -163,7 +163,7 @@ export const UserCanCreateMotion = (
 
 export const UserCanEditCandidate = (
   candidate: { users: { userID: string }[]; role: { election: { start: Date | null } } },
-  user: unknown | undefined,
+  user: { userID: string } | undefined,
   date: Date,
 ) => {
   if (!user)
@@ -171,7 +171,7 @@ export const UserCanEditCandidate = (
       error: "You must be logged in",
     }
 
-  if (!candidate.users.some((u) => u.userID === user))
+  if (!candidate.users.some((u) => u.userID === user.userID))
     return {
       error: "You are not a candidate",
     }
@@ -186,13 +186,7 @@ export const UserCanEditCandidate = (
   }
 }
 
-export const UserCanLeaveCandidate = (
-  candidate: { users: { userID: string }[]; role: { election: { start: Date | null } } },
-  user: unknown | undefined,
-  date: Date,
-) => {
-  return UserCanEditCandidate(candidate, user, date)
-}
+export const UserCanLeaveCandidate = UserCanEditCandidate
 
 export const UserCanJoinCandidate = (
   candidate: {
