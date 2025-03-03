@@ -29,6 +29,11 @@
     isTainted: editMemberIsTainted,
     tainted: editMemberTainted,
   } = editMemberSuperform
+
+  const populdateMembersSuperform = superForm(getContext("toast"), data.populateMembersForm, {
+    resetForm: false,
+  })
+  const { enhance: populateMembersFormEnhance } = populdateMembersSuperform
 </script>
 
 <form class="flex flex-col gap-2" action="?/updateApiKey" method="post" use:updateApiKeyFormEnhance>
@@ -45,6 +50,8 @@
     Populate Members List
   </button>
 </form>
+
+<form id="populateMembers" method="post" action="?/populateMembers" use:populateMembersFormEnhance></form>
 
 <h1 class="h1">Members List</h1>
 
