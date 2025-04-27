@@ -32,7 +32,7 @@ bun install
 First, make sure the database is setup with:
 
 ```bash
-bun run migrate
+bun prisma migrate dev
 ```
 
 To start the application in development mode:
