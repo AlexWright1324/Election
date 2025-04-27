@@ -141,7 +141,7 @@ export const requireElection = <T extends LoadOrAction, S extends Prisma.Electio
         updateMany: results.results.motions.map((motion) => ({
           where: { id: motion.id },
           data: {
-            results: {
+            result: {
               for: motion.results.for,
               against: motion.results.against,
               abstain: motion.results.abstain,

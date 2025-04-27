@@ -6,7 +6,7 @@ import { Prisma, PrismaClient } from "$lib/server/db"
 import { redirect } from "@sveltejs/kit"
 import { fail, superValidate, setError } from "sveltekit-superforms"
 import { zod } from "sveltekit-superforms/adapters"
-import { set, z } from "zod"
+import { z } from "zod"
 
 const candidateSignupSchema = z.object({
   roleID: z.number(),
